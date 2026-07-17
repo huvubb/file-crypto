@@ -57,21 +57,18 @@ static void ShowLanguageMenu() {
     }
 }
 
+// 1. Password-only encrypt
 static void DoEncrypt() {
     ClearScreen();
     std::cout << "=== " << I18n::Get(StrKey::ENC_PROMPT) << " ===\n\n";
 
     std::string inputPath, outputPath, password, confirm;
-
     std::cout << I18n::Get(StrKey::INPUT_FILE);
     std::getline(std::cin, inputPath);
-
     std::cout << I18n::Get(StrKey::OUTPUT_FILE);
     std::getline(std::cin, outputPath);
-
     std::cout << I18n::Get(StrKey::ENTER_PASSWORD);
     std::getline(std::cin, password);
-
     std::cout << I18n::Get(StrKey::CONFIRM_PASSWORD);
     std::getline(std::cin, confirm);
 
@@ -90,23 +87,76 @@ static void DoEncrypt() {
     Pause();
 }
 
+// 2. Encrypt + generate key file (64-byte parity split)
+static void DoEncryptKeyFile() {
+    ClearScreen();
+    std::cout << "=== " << I18n::Get(StrKey::ENC_KEYFILE) << " ===\n\n";
+
+    std::string inputPath, outputPath, keyPath, password, confirm;
+    std::cout << I18n::Get(StrKey::INPUT_FILE);
+    std::getline(std::cin, inputPath);
+    std::cout << I18n::Get(StrKey::OUTPUT_FILE);
+    std::getline(std::cin, outputPath);
+    std::cout << I18n::Get(StrKey::KEY_FILE_PATH);
+    std::getline(std::cin, keyPath);
+    std::cout << I18n::Get(StrKey::ENTER_PASSWORD);
+    std::getline(std::cin, password);
+    std::cout << I18n::Get(StrKey::CONFIRM_PASSWORD);
+    std::getline(std::cin, confirm);
+
+    if (password != confirm) {
+        std::cout << "\n" << I18n::Get(StrKey::PASSWORD_MISMATCH) << "\n";
+        Pause();
+        return;
+    }
+
+    std::string error;
+    if (FileCrypto::EncryptWithKeyFile(inputPath, outputPath, keyPath, password, error)) {
+        std::cout << "\n" << I18n::Get(StrKey::ENC_SUCCESS) << "\n";
+        std::cout << I18n::Get(StrKey::KEYFILE_SAVED) << "\n";
+    } else {
+        std::cout << "\n" << I18n::Get(StrKey::ENC_FAILED) << error << "\n";
+    }
+    Pause();
+}
+
+// 3. Password-only decrypt
 static void DoDecrypt() {
     ClearScreen();
     std::cout << "=== " << I18n::Get(StrKey::DEC_PROMPT) << " ===\n\n";
 
     std::string inputPath, outputPath, password;
-
     std::cout << I18n::Get(StrKey::INPUT_FILE);
     std::getline(std::cin, inputPath);
-
     std::cout << I18n::Get(StrKey::OUTPUT_FILE);
     std::getline(std::cin, outputPath);
-
     std::cout << I18n::Get(StrKey::ENTER_PASSWORD);
     std::getline(std::cin, password);
 
     std::string error;
     if (FileCrypto::DecryptFile(inputPath, outputPath, password, error)) {
+        std::cout << "\n" << I18n::Get(StrKey::DEC_SUCCESS) << "\n";
+    } else {
+        std::cout << "\n" << I18n::Get(StrKey::DEC_FAILED) << error << "\n";
+    }
+    Pause();
+}
+
+// 4. Decrypt using key file (parity rebuild)
+static void DoDecryptKeyFile() {
+    ClearScreen();
+    std::cout << "=== " << I18n::Get(StrKey::DEC_KEYFILE) << " ===\n\n";
+
+    std::string inputPath, outputPath, keyPath;
+    std::cout << I18n::Get(StrKey::INPUT_FILE);
+    std::getline(std::cin, inputPath);
+    std::cout << I18n::Get(StrKey::OUTPUT_FILE);
+    std::getline(std::cin, outputPath);
+    std::cout << I18n::Get(StrKey::KEY_FILE_PATH);
+    std::getline(std::cin, keyPath);
+
+    std::string error;
+    if (FileCrypto::DecryptWithKeyFile(inputPath, outputPath, keyPath, error)) {
         std::cout << "\n" << I18n::Get(StrKey::DEC_SUCCESS) << "\n";
     } else {
         std::cout << "\n" << I18n::Get(StrKey::DEC_FAILED) << error << "\n";
@@ -131,7 +181,9 @@ int main() {
         std::cout << I18n::Get(StrKey::TITLE) << "\n\n";
         std::cout << I18n::Get(StrKey::MAIN_MENU) << "\n\n";
         std::cout << "  " << I18n::Get(StrKey::ENCRYPT) << "\n";
+        std::cout << "  " << I18n::Get(StrKey::ENC_KEYFILE) << "\n";
         std::cout << "  " << I18n::Get(StrKey::DECRYPT) << "\n";
+        std::cout << "  " << I18n::Get(StrKey::DEC_KEYFILE) << "\n";
         std::cout << "  " << I18n::Get(StrKey::CHANGE_LANG) << "\n";
         std::cout << "  " << I18n::Get(StrKey::EXIT) << "\n";
         std::cout << "\n" << I18n::Get(StrKey::ENTER_CHOICE);
@@ -142,9 +194,11 @@ int main() {
 
         switch (choice) {
             case 1: DoEncrypt(); break;
-            case 2: DoDecrypt(); break;
-            case 3: ShowLanguageMenu(); break;
-            case 4:
+            case 2: DoEncryptKeyFile(); break;
+            case 3: DoDecrypt(); break;
+            case 4: DoDecryptKeyFile(); break;
+            case 5: ShowLanguageMenu(); break;
+            case 6:
                 std::cout << "\n" << I18n::Get(StrKey::GOODBYE) << "\n";
                 return 0;
             default:

@@ -13,6 +13,7 @@ endif()
 add_executable(file-crypto
     src/main.cpp
     src/aes256.cpp
+    src/sha256.cpp
     src/crypto.cpp
     src/config.cpp
     src/i18n.cpp
