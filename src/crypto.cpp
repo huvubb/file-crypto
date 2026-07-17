@@ -4,11 +4,11 @@
 #include <random>
 #include <chrono>
 #include <cstring>
+#include <iostream>
 
 static constexpr int MASTER_KEY_SIZE = 64;
 static constexpr const char* KEY_PREFIX = "fck-v2-";
 
-// --- Base64 ---
 static const char B64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 static std::string Base64Encode(const uint8_t* data, size_t len) {
@@ -48,8 +48,6 @@ static std::vector<uint8_t> Base64Decode(const std::string& s) {
     }
     return r;
 }
-
-// --- Password-based (legacy) ---
 
 bool FileCrypto::EncryptFile(const std::string& inputPath,
                               const std::string& outputPath,
@@ -161,8 +159,6 @@ bool FileCrypto::DecryptFile(const std::string& inputPath,
     return true;
 }
 
-// --- API-Key Mode: Generate random key, encrypt, return API key string ---
-
 bool FileCrypto::GenerateKeyEncrypt(const std::string& inputPath,
                                      const std::string& outputPath,
                                      std::string& apiKeyOut,
@@ -177,7 +173,6 @@ bool FileCrypto::GenerateKeyEncrypt(const std::string& inputPath,
     }
     in.close();
 
-    // Generate random 64-byte master key + random IV
     uint8_t masterKey[MASTER_KEY_SIZE];
     uint8_t iv[AES256::BLOCK_SIZE];
     {
@@ -190,7 +185,6 @@ bool FileCrypto::GenerateKeyEncrypt(const std::string& inputPath,
             iv[i] = static_cast<uint8_t>(dist(rng));
     }
 
-    // Use first 32 bytes as AES-256 key
     AES256 aes(masterKey);
 
     size_t paddedLen = ((fileSize / AES256::BLOCK_SIZE) + 1) * AES256::BLOCK_SIZE;
@@ -202,14 +196,22 @@ bool FileCrypto::GenerateKeyEncrypt(const std::string& inputPath,
     std::vector<uint8_t> ciphertext(paddedLen);
     uint8_t prev[AES256::BLOCK_SIZE];
     std::memcpy(prev, iv, AES256::BLOCK_SIZE);
+
+    std::cout << "Encrypting... 0%" << std::flush;
+    size_t lastPct = 0;
     for (size_t i = 0; i < paddedLen; i += AES256::BLOCK_SIZE) {
         uint8_t block[AES256::BLOCK_SIZE];
         for (int j = 0; j < AES256::BLOCK_SIZE; ++j) block[j] = padded[i + j] ^ prev[j];
         aes.EncryptBlock(block, ciphertext.data() + i);
         std::memcpy(prev, ciphertext.data() + i, AES256::BLOCK_SIZE);
+        size_t pct = i * 100 / paddedLen;
+        if (pct / 10 != lastPct / 10) {
+            lastPct = pct;
+            std::cout << "\rEncrypting... " << pct << "%" << std::flush;
+        }
     }
+    std::cout << "\rEncrypting... 100%" << std::endl;
 
-    // Auto-append .enc
     std::string actualOutput = outputPath;
     bool hasExt = false;
     for (const char* ext : {".enc", ".bin", ".crypt"}) {
@@ -224,26 +226,21 @@ bool FileCrypto::GenerateKeyEncrypt(const std::string& inputPath,
     std::ofstream out(actualOutput, std::ios::binary);
     if (!out) { errorMsg = "Cannot create output file"; return false; }
 
-    // Header: iv(16) + reserved(16) + magic(7) = 39 bytes, pad to 48
     uint8_t header[48] = {};
     std::memcpy(header, iv, AES256::BLOCK_SIZE);
-    std::memcpy(header + 32, "CRYPT02", 7);  // v2: API-key mode
+    std::memcpy(header + 32, "CRYPT02", 7);
     out.write(reinterpret_cast<char*>(header), 48);
     out.write(reinterpret_cast<char*>(ciphertext.data()), ciphertext.size());
     out.close();
 
-    // Generate API key string: fck-v2-<base64 of 64-byte master key>
     apiKeyOut = KEY_PREFIX + Base64Encode(masterKey, MASTER_KEY_SIZE);
     return true;
 }
-
-// --- API-Key Mode: Decrypt using API key string ---
 
 bool FileCrypto::KeyDecrypt(const std::string& inputPath,
                              const std::string& outputPath,
                              const std::string& apiKey,
                              std::string& errorMsg) {
-    // Parse API key: must start with "fck-v2-"
     if (apiKey.compare(0, strlen(KEY_PREFIX), KEY_PREFIX) != 0) {
         errorMsg = "Invalid API key format (expected fck-v2-...)";
         return false;
@@ -255,7 +252,6 @@ bool FileCrypto::KeyDecrypt(const std::string& inputPath,
         return false;
     }
 
-    // Read encrypted file
     std::ifstream in(inputPath, std::ios::binary | std::ios::ate);
     if (!in) { errorMsg = "Cannot open encrypted file"; return false; }
     std::streamsize fileSize = in.tellg();
@@ -280,7 +276,7 @@ bool FileCrypto::KeyDecrypt(const std::string& inputPath,
     }
     in.close();
 
-    AES256 aes(keyBytes.data());  // first 32 bytes = AES-256 key
+    AES256 aes(keyBytes.data());
     std::vector<uint8_t> plaintext(cipherLen);
     uint8_t prev[AES256::BLOCK_SIZE];
     std::memcpy(prev, iv, AES256::BLOCK_SIZE);
@@ -292,15 +288,15 @@ bool FileCrypto::KeyDecrypt(const std::string& inputPath,
         std::memcpy(prev, ciphertext.data() + i, AES256::BLOCK_SIZE);
     }
 
-    uint8_t padVal = plaintext.back();
-    if (padVal == 0 || padVal > AES256::BLOCK_SIZE) {
+    uint8_t padVal2 = plaintext.back();
+    if (padVal2 == 0 || padVal2 > AES256::BLOCK_SIZE) {
         errorMsg = "Wrong API key or corrupted file"; return false;
     }
-    for (int i = 0; i < padVal; ++i)
-        if (plaintext[plaintext.size() - 1 - i] != padVal) {
+    for (int i = 0; i < padVal2; ++i)
+        if (plaintext[plaintext.size() - 1 - i] != padVal2) {
             errorMsg = "Wrong API key or corrupted file"; return false;
         }
-    size_t origLen = plaintext.size() - padVal;
+    size_t origLen = plaintext.size() - padVal2;
 
     std::ofstream out(outputPath, std::ios::binary);
     if (!out) { errorMsg = "Cannot create output file"; return false; }
