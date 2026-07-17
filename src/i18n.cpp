@@ -53,8 +53,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_am() {
         {StrKey::LANG_PROMPT, "የቋንቋ ቁጥር (1-50): "},
         {StrKey::ENC_PROMPT, "ኢንክሪፕት"},
         {StrKey::DEC_PROMPT, "ዲክሪፕት"},
-        {StrKey::CONTACT_INFO, "አድራሻ: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "በትርጉም ያግዙ! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -92,8 +92,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_ar() {
         {StrKey::LANG_PROMPT, "رقم اللغة (1-50): "},
         {StrKey::ENC_PROMPT, "تشفير"},
         {StrKey::DEC_PROMPT, "فك تشفير"},
-        {StrKey::CONTACT_INFO, "للتواصل: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "مساهمات الترجمة مرحب بها! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -131,8 +131,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_bg() {
         {StrKey::LANG_PROMPT, "Номер на език (1-50): "},
         {StrKey::ENC_PROMPT, "Криптиране"},
         {StrKey::DEC_PROMPT, "Декриптиране"},
-        {StrKey::CONTACT_INFO, "Контакт: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Помогнете с превода! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -170,8 +170,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_bn() {
         {StrKey::LANG_PROMPT, "ভাষা নম্বর (1-50): "},
         {StrKey::ENC_PROMPT, "এনক্রিপ্ট"},
         {StrKey::DEC_PROMPT, "ডিক্রিপ্ট"},
-        {StrKey::CONTACT_INFO, "যোগাযোগ: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "অনুবাদে সাহায্য করুন! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -209,8 +209,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_cn_tw() {
         {StrKey::LANG_PROMPT, "語言編號 (1-50)："},
         {StrKey::ENC_PROMPT, "加密"},
         {StrKey::DEC_PROMPT, "解密"},
-        {StrKey::CONTACT_INFO, "聯繫方式: 微信 forever870422 / 郵箱 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "歡迎貢獻翻譯！聯繫 forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "歡迎貢獻翻譯！WeChat: forever870422"},
     };
 }
 
@@ -248,8 +248,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_cs() {
         {StrKey::LANG_PROMPT, "Cislo jazyka (1-50): "},
         {StrKey::ENC_PROMPT, "Sifrovat"},
         {StrKey::DEC_PROMPT, "Desifrovat"},
-        {StrKey::CONTACT_INFO, "Kontakt: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Pomozte s prekladem! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -287,8 +287,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_da() {
         {StrKey::LANG_PROMPT, "Sprognummer (1-50): "},
         {StrKey::ENC_PROMPT, "Krypter"},
         {StrKey::DEC_PROMPT, "Dekrypter"},
-        {StrKey::CONTACT_INFO, "Kontakt: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Hjaelp med oversaettelse! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -326,8 +326,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_de() {
         {StrKey::LANG_PROMPT, "Sprachnummer (1-50): "},
         {StrKey::ENC_PROMPT, "Verschluesseln"},
         {StrKey::DEC_PROMPT, "Entschluesseln"},
-        {StrKey::CONTACT_INFO, "Kontakt: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Hilf beim Uebersetzen! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -365,8 +365,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_el() {
         {StrKey::LANG_PROMPT, "Αριθμός γλώσσας (1-50): "},
         {StrKey::ENC_PROMPT, "Κρυπτογράφηση"},
         {StrKey::DEC_PROMPT, "Αποκρυπτογράφηση"},
-        {StrKey::CONTACT_INFO, "Επικοινωνία: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Βοηθήστε στη μετάφραση! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -404,8 +404,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_en() {
         {StrKey::LANG_PROMPT, "Language number (1-50): "},
         {StrKey::ENC_PROMPT, "Encrypt"},
         {StrKey::DEC_PROMPT, "Decrypt"},
-        {StrKey::CONTACT_INFO, "Contact: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Help translate! Contact forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -443,8 +443,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_es() {
         {StrKey::LANG_PROMPT, "Numero de idioma (1-50): "},
         {StrKey::ENC_PROMPT, "Cifrar"},
         {StrKey::DEC_PROMPT, "Descifrar"},
-        {StrKey::CONTACT_INFO, "Contacto: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Ayude a traducir! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -482,8 +482,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_fa() {
         {StrKey::LANG_PROMPT, "شماره زبان (1-50): "},
         {StrKey::ENC_PROMPT, "رمزنگاری"},
         {StrKey::DEC_PROMPT, "رمزگشایی"},
-        {StrKey::CONTACT_INFO, "تماس: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "در ترجمه کمک کنید! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -521,8 +521,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_fi() {
         {StrKey::LANG_PROMPT, "Kielen numero (1-50): "},
         {StrKey::ENC_PROMPT, "Salaa"},
         {StrKey::DEC_PROMPT, "Pura"},
-        {StrKey::CONTACT_INFO, "Yhteystiedot: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Auta kaantamisessa! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -560,8 +560,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_fil() {
         {StrKey::LANG_PROMPT, "Numero ng wika (1-50): "},
         {StrKey::ENC_PROMPT, "I-encrypt"},
         {StrKey::DEC_PROMPT, "I-decrypt"},
-        {StrKey::CONTACT_INFO, "Kontak: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Tumulong sa pagsasalin! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -599,8 +599,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_fr() {
         {StrKey::LANG_PROMPT, "Numero de langue (1-50) : "},
         {StrKey::ENC_PROMPT, "Chiffrer"},
         {StrKey::DEC_PROMPT, "Dechiffrer"},
-        {StrKey::CONTACT_INFO, "Contact: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Aidez a traduire! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -638,8 +638,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_gu() {
         {StrKey::LANG_PROMPT, "ભાષા નંબર (1-50): "},
         {StrKey::ENC_PROMPT, "એન્ક્રિપ્ટ"},
         {StrKey::DEC_PROMPT, "ડિક્રિપ્ટ"},
-        {StrKey::CONTACT_INFO, "સંપર્ક: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "અનુવાદમાં મદદ કરો! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -677,8 +677,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_he() {
         {StrKey::LANG_PROMPT, "מספר שפה (1-50): "},
         {StrKey::ENC_PROMPT, "הצפן"},
         {StrKey::DEC_PROMPT, "פענח"},
-        {StrKey::CONTACT_INFO, "צור קשר: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "עזור לתרגם! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -716,8 +716,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_hi() {
         {StrKey::LANG_PROMPT, "भाषा संख्या (1-50): "},
         {StrKey::ENC_PROMPT, "एन्क्रिप्ट"},
         {StrKey::DEC_PROMPT, "डिक्रिप्ट"},
-        {StrKey::CONTACT_INFO, "संपर्क: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "अनुवाद में मदद करें! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -755,8 +755,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_hr() {
         {StrKey::LANG_PROMPT, "Broj jezika (1-50): "},
         {StrKey::ENC_PROMPT, "Sifriraj"},
         {StrKey::DEC_PROMPT, "Desifriraj"},
-        {StrKey::CONTACT_INFO, "Kontakt: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Pomozite u prijevodu! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -794,8 +794,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_hu() {
         {StrKey::LANG_PROMPT, "Nyelv szama (1-50): "},
         {StrKey::ENC_PROMPT, "Titkosit"},
         {StrKey::DEC_PROMPT, "Visszafejt"},
-        {StrKey::CONTACT_INFO, "Kapcsolat: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Segitsen forditani! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -833,8 +833,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_id() {
         {StrKey::LANG_PROMPT, "Nomor bahasa (1-50): "},
         {StrKey::ENC_PROMPT, "Enkripsi"},
         {StrKey::DEC_PROMPT, "Dekripsi"},
-        {StrKey::CONTACT_INFO, "Kontak: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Bantu terjemahan! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -872,8 +872,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_it() {
         {StrKey::LANG_PROMPT, "Numero lingua (1-50): "},
         {StrKey::ENC_PROMPT, "Cifra"},
         {StrKey::DEC_PROMPT, "Decifra"},
-        {StrKey::CONTACT_INFO, "Contatto: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Aiuta a tradurre! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -911,8 +911,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_ja() {
         {StrKey::LANG_PROMPT, "言語番号 (1-50)："},
         {StrKey::ENC_PROMPT, "暗号化"},
         {StrKey::DEC_PROMPT, "復号"},
-        {StrKey::CONTACT_INFO, "連絡先: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "翻訳協力募集中！forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -950,8 +950,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_km() {
         {StrKey::LANG_PROMPT, "លេខភាសា (1-50): "},
         {StrKey::ENC_PROMPT, "អ៊ិនគ្រីប"},
         {StrKey::DEC_PROMPT, "ឌិគ្រីប"},
-        {StrKey::CONTACT_INFO, "ទំនាក់ទំនង: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "ជួយបកប្រែ! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -989,8 +989,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_kn() {
         {StrKey::LANG_PROMPT, "ಭಾಷೆ ಸಂಖ್ಯೆ (1-50): "},
         {StrKey::ENC_PROMPT, "ಎನ್ಕ್ರಿಪ್ಟ್"},
         {StrKey::DEC_PROMPT, "ಡಿಕ್ರಿಪ್ಟ್"},
-        {StrKey::CONTACT_INFO, "ಸಂಪರ್ಕ: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "ಅನುವಾದದಲ್ಲಿ ಸಹಾಯ ಮಾಡಿ! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -1028,8 +1028,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_ko() {
         {StrKey::LANG_PROMPT, "언어 번호 (1-50): "},
         {StrKey::ENC_PROMPT, "암호화"},
         {StrKey::DEC_PROMPT, "복호화"},
-        {StrKey::CONTACT_INFO, "연락처: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "번역 기여 환영! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -1067,8 +1067,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_lo() {
         {StrKey::LANG_PROMPT, "ເລກພາສາ (1-50): "},
         {StrKey::ENC_PROMPT, "ເຂົ້າລະຫັດ"},
         {StrKey::DEC_PROMPT, "ຖອດລະຫັດ"},
-        {StrKey::CONTACT_INFO, "ຕິດຕໍ່: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "ຊ່ວຍແປພາສາ! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -1106,8 +1106,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_mr() {
         {StrKey::LANG_PROMPT, "भाषा क्रमांक (1-50): "},
         {StrKey::ENC_PROMPT, "एन्क्रिप्ट"},
         {StrKey::DEC_PROMPT, "डिक्रिप्ट"},
-        {StrKey::CONTACT_INFO, "संपर्क: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "भाषांतरात मदत करा! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -1145,8 +1145,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_ms() {
         {StrKey::LANG_PROMPT, "Nombor bahasa (1-50): "},
         {StrKey::ENC_PROMPT, "Sulitkan"},
         {StrKey::DEC_PROMPT, "Nyahsulit"},
-        {StrKey::CONTACT_INFO, "Hubungi: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Bantu terjemahan! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -1184,8 +1184,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_my() {
         {StrKey::LANG_PROMPT, "ဘာသာစကားနံပါတ် (1-50): "},
         {StrKey::ENC_PROMPT, "စာဝှက်ရန်"},
         {StrKey::DEC_PROMPT, "စာဖွင့်ရန်"},
-        {StrKey::CONTACT_INFO, "ဆက်သွယ်ရန်: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "ဘာသာပြန်ရာတွင်ကူညီပါ! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -1223,8 +1223,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_ne() {
         {StrKey::LANG_PROMPT, "भाषा नम्बर (1-50): "},
         {StrKey::ENC_PROMPT, "इन्क्रिप्ट"},
         {StrKey::DEC_PROMPT, "डिक्रिप्ट"},
-        {StrKey::CONTACT_INFO, "सम्पर्क: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "अनुवादमा मद्दत गर्नुहोस्! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -1262,8 +1262,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_nl() {
         {StrKey::LANG_PROMPT, "Taalnummer (1-50): "},
         {StrKey::ENC_PROMPT, "Versleutelen"},
         {StrKey::DEC_PROMPT, "Ontsleutelen"},
-        {StrKey::CONTACT_INFO, "Contact: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Help met vertalen! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -1301,8 +1301,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_no() {
         {StrKey::LANG_PROMPT, "Spraknummer (1-50): "},
         {StrKey::ENC_PROMPT, "Krypter"},
         {StrKey::DEC_PROMPT, "Dekrypter"},
-        {StrKey::CONTACT_INFO, "Kontakt: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Hjelp med oversettelse! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -1340,8 +1340,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_pa() {
         {StrKey::LANG_PROMPT, "ਭਾਸ਼ਾ ਨੰਬਰ (1-50): "},
         {StrKey::ENC_PROMPT, "ਇਨਕ੍ਰਿਪਟ"},
         {StrKey::DEC_PROMPT, "ਡੀਕ੍ਰਿਪਟ"},
-        {StrKey::CONTACT_INFO, "ਸੰਪਰਕ: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "ਅਨੁਵਾਦ ਵਿੱਚ ਮਦਦ ਕਰੋ! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -1379,8 +1379,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_pl() {
         {StrKey::LANG_PROMPT, "Numer jezyka (1-50): "},
         {StrKey::ENC_PROMPT, "Szyfruj"},
         {StrKey::DEC_PROMPT, "Odszyfruj"},
-        {StrKey::CONTACT_INFO, "Kontakt: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Pomoz w tlumaczeniu! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -1418,8 +1418,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_pt() {
         {StrKey::LANG_PROMPT, "Numero do idioma (1-50): "},
         {StrKey::ENC_PROMPT, "Criptografar"},
         {StrKey::DEC_PROMPT, "Descriptografar"},
-        {StrKey::CONTACT_INFO, "Contato: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Ajude a traduzir! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -1457,8 +1457,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_ro() {
         {StrKey::LANG_PROMPT, "Numar limba (1-50): "},
         {StrKey::ENC_PROMPT, "Criptare"},
         {StrKey::DEC_PROMPT, "Decriptare"},
-        {StrKey::CONTACT_INFO, "Contact: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Ajutati la traducere! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -1496,8 +1496,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_ru() {
         {StrKey::LANG_PROMPT, "Номер языка (1-50): "},
         {StrKey::ENC_PROMPT, "Шифровать"},
         {StrKey::DEC_PROMPT, "Расшифровать"},
-        {StrKey::CONTACT_INFO, "Контакт: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Помогите с переводом! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -1535,8 +1535,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_si() {
         {StrKey::LANG_PROMPT, "භාෂා අංකය (1-50): "},
         {StrKey::ENC_PROMPT, "සංකේතනය"},
         {StrKey::DEC_PROMPT, "විසංකේතනය"},
-        {StrKey::CONTACT_INFO, "සම්බන්ධතා: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "පරිවර්තනයට උදව් කරන්න! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -1574,8 +1574,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_sr() {
         {StrKey::LANG_PROMPT, "Broj jezika (1-50): "},
         {StrKey::ENC_PROMPT, "Sifruj"},
         {StrKey::DEC_PROMPT, "Desifruj"},
-        {StrKey::CONTACT_INFO, "Kontakt: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Pomozite u prevodu! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -1613,8 +1613,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_sv() {
         {StrKey::LANG_PROMPT, "Spraknummer (1-50): "},
         {StrKey::ENC_PROMPT, "Kryptera"},
         {StrKey::DEC_PROMPT, "Dekryptera"},
-        {StrKey::CONTACT_INFO, "Kontakt: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Hjalp till att oversatta! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -1652,8 +1652,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_sw() {
         {StrKey::LANG_PROMPT, "Nambari ya lugha (1-50): "},
         {StrKey::ENC_PROMPT, "Simba"},
         {StrKey::DEC_PROMPT, "Fumbua"},
-        {StrKey::CONTACT_INFO, "Mawasiliano: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Saidia kutafsiri! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -1691,8 +1691,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_ta() {
         {StrKey::LANG_PROMPT, "மொழி எண் (1-50): "},
         {StrKey::ENC_PROMPT, "குறியாக்கு"},
         {StrKey::DEC_PROMPT, "மறைகுறிநீக்கு"},
-        {StrKey::CONTACT_INFO, "தொடர்பு: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "மொழிபெயர்க்க உதவுங்கள்! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -1730,8 +1730,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_te() {
         {StrKey::LANG_PROMPT, "భాష సంఖ్య (1-50): "},
         {StrKey::ENC_PROMPT, "ఎన్క్రిప్ట్"},
         {StrKey::DEC_PROMPT, "డీక్రిప్ట్"},
-        {StrKey::CONTACT_INFO, "సంప్రదించండి: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "అనువాదంలో సహాయపడండి! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -1769,8 +1769,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_th() {
         {StrKey::LANG_PROMPT, "หมายเลขภาษา (1-50): "},
         {StrKey::ENC_PROMPT, "เข้ารหัส"},
         {StrKey::DEC_PROMPT, "ถอดรหัส"},
-        {StrKey::CONTACT_INFO, "ติดต่อ: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "ช่วยแปลภาษา! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -1808,8 +1808,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_tr() {
         {StrKey::LANG_PROMPT, "Dil numarasi (1-50): "},
         {StrKey::ENC_PROMPT, "Sifrele"},
         {StrKey::DEC_PROMPT, "Coz"},
-        {StrKey::CONTACT_INFO, "Iletisim: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Ceviriye yardim edin! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -1847,8 +1847,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_uk() {
         {StrKey::LANG_PROMPT, "Номер мови (1-50): "},
         {StrKey::ENC_PROMPT, "Шифрувати"},
         {StrKey::DEC_PROMPT, "Розшифрувати"},
-        {StrKey::CONTACT_INFO, "Контакт: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Допоможіть з перекладом! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -1886,8 +1886,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_ur() {
         {StrKey::LANG_PROMPT, "زبان نمبر (1-50): "},
         {StrKey::ENC_PROMPT, "انکرپٹ"},
         {StrKey::DEC_PROMPT, "ڈیکرپٹ"},
-        {StrKey::CONTACT_INFO, "رابطہ: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "ترجمے میں مدد کریں! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -1925,8 +1925,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_vi() {
         {StrKey::LANG_PROMPT, "So ngon ngu (1-50): "},
         {StrKey::ENC_PROMPT, "Ma hoa"},
         {StrKey::DEC_PROMPT, "Giai ma"},
-        {StrKey::CONTACT_INFO, "Lien he: WeChat forever870422 / Email 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "Giup dich thuat! forever870422"},
+        {StrKey::CONTACT_INFO, "WeChat: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
     };
 }
 
@@ -1964,8 +1964,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_zh_CN() {
         {StrKey::LANG_PROMPT, "语言编号 (1-50)："},
         {StrKey::ENC_PROMPT, "加密"},
         {StrKey::DEC_PROMPT, "解密"},
-        {StrKey::CONTACT_INFO, "联系方式: 微信 forever870422 / 邮箱 810372789@qq.com"},
-        {StrKey::WELCOME_CONTRIB, "欢迎贡献翻译！联系 forever870422"},
+        {StrKey::CONTACT_INFO, "微信: forever870422  邮箱: 810372789@qq.com"},
+        {StrKey::WELCOME_CONTRIB, "欢迎贡献翻译！微信: forever870422"},
     };
 }
 
