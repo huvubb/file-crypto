@@ -4,7 +4,10 @@
 #include <cstdint>
 #include <cstring>
 #include <vector>
-#include <stdexcept>
+#include "sha256.hpp"
+
+
+void EnsureMulTables();
 
 class AES256 {
 public:
@@ -12,6 +15,7 @@ public:
     static constexpr int KEY_SIZE = 32;
 
     AES256(const uint8_t* key) {
+        EnsureMulTables();
         KeyExpansion(key, roundKeys_);
     }
 
@@ -51,20 +55,37 @@ public:
         std::memcpy(out, state, BLOCK_SIZE);
     }
 
+    // PBKDF2-style key derivation: SHA-256(salt + password) iterated 200k rounds
     static std::vector<uint8_t> DeriveKey256(const std::string& password, const uint8_t* salt, size_t saltLen) {
         std::vector<uint8_t> key(KEY_SIZE);
         std::vector<uint8_t> data(saltLen + password.size());
         std::memcpy(data.data(), salt, saltLen);
         std::memcpy(data.data() + saltLen, password.data(), password.size());
 
-        std::vector<uint8_t> hash(KEY_SIZE, 0);
-        for (int round = 0; round < 100000; ++round) {
-            SimpleHash(data, hash, round);
+        // Initial SHA-256
+        SHA256 sha;
+        sha.Update(data.data(), data.size());
+        std::vector<uint8_t> hash(SHA256::HASH_SIZE);
+        sha.Finalize(hash.data());
+
+        // Iterate 200k rounds (slow down brute force)
+        for (int round = 0; round < 200000; ++round) {
+            sha.Reset();
+            sha.Update(hash.data(), SHA256::HASH_SIZE);
+            sha.Update(reinterpret_cast<const uint8_t*>(&round), sizeof(round));
+            sha.Finalize(hash.data());
         }
 
         std::memcpy(key.data(), hash.data(), KEY_SIZE);
         return key;
     }
+
+    static const uint8_t mul2_[256];
+    static const uint8_t mul3_[256];
+    static const uint8_t mul9_[256];
+    static const uint8_t mul11_[256];
+    static const uint8_t mul13_[256];
+    static const uint8_t mul14_[256];
 
 private:
     uint8_t roundKeys_[15][BLOCK_SIZE];
@@ -72,31 +93,6 @@ private:
     static const uint8_t sbox_[256];
     static const uint8_t inv_sbox_[256];
     static const uint8_t rcon_[15];
-
-    static void SimpleHash(const std::vector<uint8_t>& data, std::vector<uint8_t>& hash, int round) {
-        for (size_t i = 0; i < data.size(); ++i) {
-            hash[i % 32] ^= data[i];
-            hash[i % 32] = (hash[i % 32] << 3) | (hash[i % 32] >> 5);
-            hash[i % 32] ^= static_cast<uint8_t>(round & 0xFF);
-            hash[(i + 7) % 32] += hash[i % 32];
-        }
-    }
-
-    static inline uint8_t xtime(uint8_t x) {
-        return static_cast<uint8_t>((x << 1) ^ ((x >> 7) ? 0x1b : 0x00));
-    }
-
-    static inline uint8_t Multiply(uint8_t a, uint8_t b) {
-        uint8_t result = 0;
-        for (int i = 0; i < 8; ++i) {
-            if (b & 1) result ^= a;
-            uint8_t hi = static_cast<uint8_t>(a & 0x80);
-            a <<= 1;
-            if (hi) a ^= 0x1b;
-            b >>= 1;
-        }
-        return result;
-    }
 
     void SubBytes(uint8_t state[BLOCK_SIZE]) const {
         for (int i = 0; i < BLOCK_SIZE; ++i) state[i] = sbox_[state[i]];
@@ -127,22 +123,22 @@ private:
     void MixColumns(uint8_t state[BLOCK_SIZE]) const {
         for (int i = 0; i < 4; ++i) {
             int c = i * 4;
-            uint8_t a[4] = {state[c], state[c+1], state[c+2], state[c+3]};
-            state[c]   = Multiply(2, a[0]) ^ Multiply(3, a[1]) ^ a[2] ^ a[3];
-            state[c+1] = a[0] ^ Multiply(2, a[1]) ^ Multiply(3, a[2]) ^ a[3];
-            state[c+2] = a[0] ^ a[1] ^ Multiply(2, a[2]) ^ Multiply(3, a[3]);
-            state[c+3] = Multiply(3, a[0]) ^ a[1] ^ a[2] ^ Multiply(2, a[3]);
+            uint8_t a0 = state[c], a1 = state[c+1], a2 = state[c+2], a3 = state[c+3];
+            state[c]   = mul2_[a0] ^ mul3_[a1] ^ a2 ^ a3;
+            state[c+1] = a0 ^ mul2_[a1] ^ mul3_[a2] ^ a3;
+            state[c+2] = a0 ^ a1 ^ mul2_[a2] ^ mul3_[a3];
+            state[c+3] = mul3_[a0] ^ a1 ^ a2 ^ mul2_[a3];
         }
     }
 
     void InvMixColumns(uint8_t state[BLOCK_SIZE]) const {
         for (int i = 0; i < 4; ++i) {
             int c = i * 4;
-            uint8_t a[4] = {state[c], state[c+1], state[c+2], state[c+3]};
-            state[c]   = Multiply(0x0e, a[0]) ^ Multiply(0x0b, a[1]) ^ Multiply(0x0d, a[2]) ^ Multiply(0x09, a[3]);
-            state[c+1] = Multiply(0x09, a[0]) ^ Multiply(0x0e, a[1]) ^ Multiply(0x0b, a[2]) ^ Multiply(0x0d, a[3]);
-            state[c+2] = Multiply(0x0d, a[0]) ^ Multiply(0x09, a[1]) ^ Multiply(0x0e, a[2]) ^ Multiply(0x0b, a[3]);
-            state[c+3] = Multiply(0x0b, a[0]) ^ Multiply(0x0d, a[1]) ^ Multiply(0x09, a[2]) ^ Multiply(0x0e, a[3]);
+            uint8_t a0 = state[c], a1 = state[c+1], a2 = state[c+2], a3 = state[c+3];
+            state[c]   = mul14_[a0] ^ mul11_[a1] ^ mul13_[a2] ^ mul9_[a3];
+            state[c+1] = mul9_[a0]  ^ mul14_[a1] ^ mul11_[a2] ^ mul13_[a3];
+            state[c+2] = mul13_[a0] ^ mul9_[a1]  ^ mul14_[a2] ^ mul11_[a3];
+            state[c+3] = mul11_[a0] ^ mul13_[a1] ^ mul9_[a2]  ^ mul14_[a3];
         }
     }
 
