@@ -3,6 +3,22 @@
 std::string I18n::currentLang_ = "en";
 std::unordered_map<StrKey, std::string> I18n::currentStrings_;
 
+const std::string& I18n::Get(StrKey key) {
+    auto it = currentStrings_.find(key);
+    if (it != currentStrings_.end()) return it->second;
+    static const std::string empty;
+    return empty;
+}
+
+void I18n::SetLanguage(const std::string& code) {
+    currentLang_ = code;
+    currentStrings_ = GetStrings(code);
+}
+
+const std::string& I18n::CurrentCode() {
+    return currentLang_;
+}
+
 static std::unordered_map<StrKey, std::string> Make_lang_am() {
     return {
         {StrKey::TITLE, "=== የፋይል ምስጠራ መሳሪያ ==="},
