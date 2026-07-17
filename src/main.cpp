@@ -126,8 +126,7 @@ static void ClearScreen() {
 
 static void Pause() {
     std::cout << "\n" << I18n::Get(StrKey::PRESS_ENTER);
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    std::cin.get();
+    ReadLineUtf8();
 }
 
 static void ShowLanguageMenu() {
