@@ -45,6 +45,13 @@ static std::string ReadLineUtf8() {
     return result;
 }
 
+static int ReadInt() {
+    std::string s = ReadLineUtf8();
+    try { return std::stoi(s); }
+    catch (...) { return -1; }
+}
+
+
 static std::string TrimPath(const std::string& raw) {
     std::string s = raw;
     while (!s.empty() && (s.front() == ' ' || s.front() == 9)) s.erase(0, 1);
@@ -130,8 +137,7 @@ static void ShowLanguageMenu() {
     for (size_t i = 0; i < langs.size(); ++i)
         std::cout << "  " << (i + 1) << ". " << langs[i].name << "\n";
     std::cout << "\n" << I18n::Get(StrKey::LANG_PROMPT);
-    int c; std::cin >> c;
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    int c = ReadInt();
     if (c >= 1 && c <= (int)langs.size()) {
         I18n::SetLanguage(langs[c-1].code);
         Config::SaveLanguage(langs[c-1].code);
@@ -238,8 +244,7 @@ int main() {
         std::cout << "  " << I18n::Get(StrKey::EXIT) << "\n\n";
         std::cout << I18n::Get(StrKey::ENTER_CHOICE);
 
-        int c; std::cin >> c;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        int c = ReadInt();
         switch (c) {
             case 1: DoEncrypt(); break;
             case 2: DoApiEncrypt(); break;
