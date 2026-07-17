@@ -15,14 +15,26 @@
 #undef DecryptFile
 #endif
 
-static std::mt19937 gRng(static_cast<unsigned>(
-    std::chrono::steady_clock::now().time_since_epoch().count()));
+static std::string TrimPath(const std::string& raw) {
+    std::string s = raw;
+    while (!s.empty() && (s.front() == ' ' || s.front() == 9)) s.erase(0, 1);
+    while (!s.empty()) {
+        char c = s.back();
+        if (c == ' ' || c == 9 || c == 10 || c == 13) s.pop_back();
+        else break;
+    }
+    if (s.size() >= 2 && s.front() == '"' && s.back() == '"')
+        s = s.substr(1, s.size() - 2);
+    return s;
+}
 
 static std::string RandomSuffix() {
+    static std::mt19937 rng(static_cast<unsigned>(
+        std::chrono::steady_clock::now().time_since_epoch().count()));
     static const char chars[] = "abcdefghijklmnopqrstuvwxyz0123456789";
     std::string s(6, ' ');
     std::uniform_int_distribution<int> dist(0, 35);
-    for (int i = 0; i < 6; ++i) s[i] = chars[dist(gRng)];
+    for (int i = 0; i < 6; ++i) s[i] = chars[dist(rng)];
     return s;
 }
 
@@ -102,6 +114,10 @@ static void DoEncrypt() {
     std::cout << "=== " << I18n::Get(StrKey::ENC_PROMPT) << " ===\n\n";
     std::string in, pass, confirm;
     std::cout << I18n::Get(StrKey::INPUT_FILE); std::getline(std::cin, in);
+    in = TrimPath(in);
+    in = TrimPath(in);
+    in = TrimPath(in);
+    in = TrimPath(in);
     std::string out = MakeEncPath(in);
     std::cout << I18n::Get(StrKey::ENTER_PASSWORD); std::getline(std::cin, pass);
     std::cout << I18n::Get(StrKey::CONFIRM_PASSWORD); std::getline(std::cin, confirm);
@@ -110,7 +126,7 @@ static void DoEncrypt() {
     if (FileCrypto::EncryptFile(in, out, pass, err))
         std::cout << "\n" << I18n::Get(StrKey::ENC_SUCCESS) << " -> " << out << "\n";
     else
-        std::cout << "\n" << I18n::Get(StrKey::ENC_FAILED) << err << "\n";
+        std::cout << "\n" << I18n::Get(StrKey::ENC_FAILED) << err << " [" << in << "]" << "\n";
     Pause();
 }
 
@@ -119,6 +135,10 @@ static void DoApiEncrypt() {
     std::cout << "=== " << I18n::Get(StrKey::ENC_KEYFILE) << " ===\n\n";
     std::string in;
     std::cout << I18n::Get(StrKey::INPUT_FILE); std::getline(std::cin, in);
+    in = TrimPath(in);
+    in = TrimPath(in);
+    in = TrimPath(in);
+    in = TrimPath(in);
     std::string out = MakeEncPath(in);
     std::string apiKey, err;
     if (FileCrypto::GenerateKeyEncrypt(in, out, apiKey, err)) {
@@ -128,7 +148,7 @@ static void DoApiEncrypt() {
         std::cout << "========================================\n";
         std::cout << I18n::Get(StrKey::WELCOME_CONTRIB) << "\n";
     } else {
-        std::cout << "\n" << I18n::Get(StrKey::ENC_FAILED) << err << "\n";
+        std::cout << "\n" << I18n::Get(StrKey::ENC_FAILED) << err << " [" << in << "]" << "\n";
     }
     Pause();
 }
@@ -138,13 +158,17 @@ static void DoDecrypt() {
     std::cout << "=== " << I18n::Get(StrKey::DEC_PROMPT) << " ===\n\n";
     std::string in, pass;
     std::cout << I18n::Get(StrKey::INPUT_FILE); std::getline(std::cin, in);
+    in = TrimPath(in);
+    in = TrimPath(in);
+    in = TrimPath(in);
+    in = TrimPath(in);
     std::string out = MakeDecPath(in);
     std::cout << I18n::Get(StrKey::ENTER_PASSWORD); std::getline(std::cin, pass);
     std::string err;
     if (FileCrypto::DecryptFile(in, out, pass, err))
         std::cout << "\n" << I18n::Get(StrKey::DEC_SUCCESS) << " -> " << out << "\n";
     else
-        std::cout << "\n" << I18n::Get(StrKey::DEC_FAILED) << err << "\n";
+        std::cout << "\n" << I18n::Get(StrKey::DEC_FAILED) << err << " [" << in << "]" << "\n";
     Pause();
 }
 
@@ -153,13 +177,17 @@ static void DoApiDecrypt() {
     std::cout << "=== " << I18n::Get(StrKey::DEC_KEYFILE) << " ===\n\n";
     std::string in, apiKey;
     std::cout << I18n::Get(StrKey::INPUT_FILE); std::getline(std::cin, in);
+    in = TrimPath(in);
+    in = TrimPath(in);
+    in = TrimPath(in);
+    in = TrimPath(in);
     std::string out = MakeDecPath(in);
     std::cout << I18n::Get(StrKey::KEY_FILE_PATH); std::getline(std::cin, apiKey);
     std::string err;
     if (FileCrypto::KeyDecrypt(in, out, apiKey, err))
         std::cout << "\n" << I18n::Get(StrKey::DEC_SUCCESS) << " -> " << out << "\n";
     else
-        std::cout << "\n" << I18n::Get(StrKey::DEC_FAILED) << err << "\n";
+        std::cout << "\n" << I18n::Get(StrKey::DEC_FAILED) << err << " [" << in << "]" << "\n";
     Pause();
 }
 
