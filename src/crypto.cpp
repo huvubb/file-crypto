@@ -64,12 +64,15 @@ static BCRYPT_KEY_HANDLE CreateAesKey(BCRYPT_ALG_HANDLE alg, const uint8_t* key,
 
 // AES-256-CBC encrypt
 static bool AesCbcEncrypt(const uint8_t* key, const uint8_t* iv, const uint8_t* in, size_t inLen, std::vector<uint8_t>& out) {
+    uint8_t ivCopy[AES_BLOCK];
+    memcpy(ivCopy, iv, AES_BLOCK);
     BCRYPT_ALG_HANDLE alg = OpenAes();
     BCRYPT_KEY_HANDLE hk = CreateAesKey(alg, key, 32);
     ULONG outLen;
-    BCryptEncrypt(hk, (PUCHAR)in, (ULONG)inLen, NULL, (PUCHAR)iv, AES_BLOCK, NULL, 0, &outLen, 0);
+    BCryptEncrypt(hk, (PUCHAR)in, (ULONG)inLen, NULL, (PUCHAR)ivCopy, AES_BLOCK, NULL, 0, &outLen, 0);
     out.resize(outLen);
-    BCryptEncrypt(hk, (PUCHAR)in, (ULONG)inLen, NULL, (PUCHAR)iv, AES_BLOCK, out.data(), outLen, &outLen, 0);
+    memcpy(ivCopy, iv, AES_BLOCK);
+    BCryptEncrypt(hk, (PUCHAR)in, (ULONG)inLen, NULL, (PUCHAR)ivCopy, AES_BLOCK, out.data(), outLen, &outLen, 0);
     BCryptDestroyKey(hk);
     BCryptCloseAlgorithmProvider(alg, 0);
     return true;
@@ -77,12 +80,15 @@ static bool AesCbcEncrypt(const uint8_t* key, const uint8_t* iv, const uint8_t* 
 
 // AES-256-CBC decrypt
 static bool AesCbcDecrypt(const uint8_t* key, const uint8_t* iv, const uint8_t* in, size_t inLen, std::vector<uint8_t>& out) {
+    uint8_t ivCopy[AES_BLOCK];
+    memcpy(ivCopy, iv, AES_BLOCK);
     BCRYPT_ALG_HANDLE alg = OpenAes();
     BCRYPT_KEY_HANDLE hk = CreateAesKey(alg, key, 32);
     ULONG outLen;
-    BCryptDecrypt(hk, (PUCHAR)in, (ULONG)inLen, NULL, (PUCHAR)iv, AES_BLOCK, NULL, 0, &outLen, 0);
+    BCryptDecrypt(hk, (PUCHAR)in, (ULONG)inLen, NULL, (PUCHAR)ivCopy, AES_BLOCK, NULL, 0, &outLen, 0);
     out.resize(outLen);
-    BCryptDecrypt(hk, (PUCHAR)in, (ULONG)inLen, NULL, (PUCHAR)iv, AES_BLOCK, out.data(), outLen, &outLen, 0);
+    memcpy(ivCopy, iv, AES_BLOCK);
+    BCryptDecrypt(hk, (PUCHAR)in, (ULONG)inLen, NULL, (PUCHAR)ivCopy, AES_BLOCK, out.data(), outLen, &outLen, 0);
     BCryptDestroyKey(hk);
     BCryptCloseAlgorithmProvider(alg, 0);
     return true;
