@@ -27,6 +27,24 @@ static void ShowProgress(const std::string& label, size_t done, size_t total) {
     if (done >= total) { std::cout << "\r" << label << " 100%\n"; lastPct = -1; }
 }
 
+static std::string ReadLineUtf8() {
+    std::wstring ws;
+    HANDLE h = GetStdHandle(STD_INPUT_HANDLE);
+    DWORD read;
+    WCHAR buf[4096];
+    while (ReadConsoleW(h, buf, 4096, &read, NULL) && read > 0) {
+        ws.append(buf, read);
+        if (buf[read - 1] == L'\n') break;
+    }
+    while (!ws.empty() && (ws.back() == L'\r' || ws.back() == L'\n'))
+        ws.pop_back();
+    int len = WideCharToMultiByte(CP_UTF8, 0, ws.c_str(), -1, NULL, 0, NULL, NULL);
+    if (len <= 1) return "";
+    std::string result(len - 1, '\0');
+    WideCharToMultiByte(CP_UTF8, 0, ws.c_str(), -1, &result[0], len, NULL, NULL);
+    return result;
+}
+
 static std::string TrimPath(const std::string& raw) {
     std::string s = raw;
     while (!s.empty() && (s.front() == ' ' || s.front() == 9)) s.erase(0, 1);
@@ -125,14 +143,14 @@ static void DoEncrypt() {
     ClearScreen();
     std::cout << "=== " << I18n::Get(StrKey::ENC_PROMPT) << " ===\n\n";
     std::string in, pass, confirm;
-    std::cout << I18n::Get(StrKey::INPUT_FILE); std::getline(std::cin, in);
+    std::cout << I18n::Get(StrKey::INPUT_FILE); in = ReadLineUtf8();
     in = TrimPath(in);
     in = TrimPath(in);
     in = TrimPath(in);
     in = TrimPath(in);
     std::string out = MakeEncPath(in);
-    std::cout << I18n::Get(StrKey::ENTER_PASSWORD); std::getline(std::cin, pass);
-    std::cout << I18n::Get(StrKey::CONFIRM_PASSWORD); std::getline(std::cin, confirm);
+    std::cout << I18n::Get(StrKey::ENTER_PASSWORD); pass = ReadLineUtf8();
+    std::cout << I18n::Get(StrKey::CONFIRM_PASSWORD); confirm = ReadLineUtf8();
     if (pass != confirm) { std::cout << "\n" << I18n::Get(StrKey::PASSWORD_MISMATCH) << "\n"; Pause(); return; }
     std::string err;
     if (FileCrypto::EncryptFile(in, out, pass, err))
@@ -146,7 +164,7 @@ static void DoApiEncrypt() {
     ClearScreen();
     std::cout << "=== " << I18n::Get(StrKey::ENC_KEYFILE) << " ===\n\n";
     std::string in;
-    std::cout << I18n::Get(StrKey::INPUT_FILE); std::getline(std::cin, in);
+    std::cout << I18n::Get(StrKey::INPUT_FILE); in = ReadLineUtf8();
     in = TrimPath(in);
     in = TrimPath(in);
     in = TrimPath(in);
@@ -169,13 +187,13 @@ static void DoDecrypt() {
     ClearScreen();
     std::cout << "=== " << I18n::Get(StrKey::DEC_PROMPT) << " ===\n\n";
     std::string in, pass;
-    std::cout << I18n::Get(StrKey::INPUT_FILE); std::getline(std::cin, in);
+    std::cout << I18n::Get(StrKey::INPUT_FILE); in = ReadLineUtf8();
     in = TrimPath(in);
     in = TrimPath(in);
     in = TrimPath(in);
     in = TrimPath(in);
     std::string out = MakeDecPath(in);
-    std::cout << I18n::Get(StrKey::ENTER_PASSWORD); std::getline(std::cin, pass);
+    std::cout << I18n::Get(StrKey::ENTER_PASSWORD); pass = ReadLineUtf8();
     std::string err;
     if (FileCrypto::DecryptFile(in, out, pass, err))
         std::cout << "\n" << I18n::Get(StrKey::DEC_SUCCESS) << " -> " << out << "\n";
@@ -188,13 +206,13 @@ static void DoApiDecrypt() {
     ClearScreen();
     std::cout << "=== " << I18n::Get(StrKey::DEC_KEYFILE) << " ===\n\n";
     std::string in, apiKey;
-    std::cout << I18n::Get(StrKey::INPUT_FILE); std::getline(std::cin, in);
+    std::cout << I18n::Get(StrKey::INPUT_FILE); in = ReadLineUtf8();
     in = TrimPath(in);
     in = TrimPath(in);
     in = TrimPath(in);
     in = TrimPath(in);
     std::string out = MakeDecPath(in);
-    std::cout << I18n::Get(StrKey::KEY_FILE_PATH); std::getline(std::cin, apiKey);
+    std::cout << I18n::Get(StrKey::KEY_FILE_PATH); apiKey = ReadLineUtf8();
     std::string err;
     if (FileCrypto::KeyDecrypt(in, out, apiKey, err))
         std::cout << "\n" << I18n::Get(StrKey::DEC_SUCCESS) << " -> " << out << "\n";
