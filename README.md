@@ -1,54 +1,47 @@
 # File Crypto - Multi-Language File Encryption Tool
 
-A C++ file encryption/decryption tool with **50 language** support, featuring AES-256-CBC encryption, SHA-256 verification, and parity-based key splitting.
+A C++ file encryption/decryption tool with **50 language** support and API-key-style key management.
 
 ## Features
 
-- **AES-256-CBC** encryption with 200,000-round key derivation
-- **SHA-256** hash verification of encryption keys
-- **64-byte (512-bit) master key** with parity split/reconstruction
-- **Key file generation** (.key) with automatic backup (.key.bak)
-- **Parity split**: key split by even/odd byte positions, stored separately
-- **Parity rebuild**: reconstruct master key from even/odd halves, verified by SHA-256
-- Encrypted output auto-appends `.enc` binary extension
-- **50 languages** supported (config saved to `D:\file_crypto_config.ini`)
-- MIT licensed, open source
+- **AES-256-CBC** encryption with random key generation
+- **API Key mode**: generates a portable key string like `fck-v2-<base64>` for passwordless decrypt
+- **Password mode**: traditional password-based encryption
+- Auto-append `.enc` to encrypted outputs
+- **50 languages** with config saved to `D:\file_crypto_config.ini`
+- MIT licensed
 
-## Menu Options
+## Menu
 
-1. **Encrypt (Password)** - simple password-based encryption
-2. **Encrypt + Key File** - encrypts file, generates .key + .key.bak with parity-split 512-bit key
-3. **Decrypt (Password)** - password-based decryption
-4. **Decrypt with Key File** - decrypt using .key file (parity-rebuild + SHA-256 verify)
-5. **Change Language** - switch UI language
+1. **Encrypt (Password)** — encrypt with a password
+2. **API Key Encrypt** — generates a random 64-byte key, encrypts, displays API key string
+3. **Decrypt (Password)** — decrypt with the original password
+4. **API Key Decrypt** — decrypt using the API key string
+5. **Change Language**
 6. **Exit**
 
-## Key File Format (v2)
+## API Key Format
 
-| Offset | Size | Field |
-|--------|------|-------|
-| 0 | 8 | Magic "KEYFILE1" |
-| 8 | 1 | Version (2) |
-| 9 | 16 | Salt |
-| 25 | 16 | IV |
-| 41 | 32 | SHA-256 of 64-byte master key |
-| 73 | 32 | Even-parity half (bytes 0,2,4,...,62) |
-| 105 | 32 | Odd-parity half (bytes 1,3,5,...,63) |
-
-Total: 137 bytes
+```
+fck-v2-eGhpcyBpc2E2NGJ5dGVrZXk...
+```
+Base64-encoded 64-byte master key with `fck-v2-` prefix. Save this string securely — it is the only way to decrypt!
 
 ## Build
 
-### Prerequisites
-- CMake 3.14+
-- C++17 compiler (MSVC, GCC, or Clang)
-
-### Windows (MSVC)
 ```bash
 mkdir build && cd build
 cmake .. -G "Visual Studio 17 2022" -A x64
 cmake --build . --config Release
 ```
+
+## Translation Disclaimer
+
+> **注意 / Note:** 除简体中文和英文外，其他语言的翻译为机器辅助生成，可能存在不够自然或不够准确的表达。我们欢迎母语使用者提交翻译改进！
+>
+> Translations for languages other than Simplified Chinese and English are machine-assisted and may contain unnatural or imprecise expressions. **Native speakers are warmly welcome to contribute improvements!**
+>
+> 簡體中文和英文除外的翻譯為機器輔助生成，歡迎母語使用者貢獻改進！
 
 ## Contact
 
@@ -57,8 +50,8 @@ cmake --build . --config Release
 
 ## Contributing
 
-**Welcome translation contributions!** Contact forever870422 to help translate.
+**Welcome translation contributions!** Contact forever870422.
 
 ## License
 
-MIT License - see [LICENSE](LICENSE)
+MIT License — see [LICENSE](LICENSE)
