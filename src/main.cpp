@@ -233,35 +233,37 @@ static void DoVolumeEncrypt() {
     ClearScreen();
     std::cout << "=== " << I18n::Get(StrKey::PART_ENC) << " ===\n\n";
     std::cout << I18n::Get(StrKey::PART_WARN) << "\n\n";
-    std::cout << "  " << I18n::Get(StrKey::PART_LOGICAL_MODE) << "\n";
-    std::cout << "  " << I18n::Get(StrKey::PART_PHYSICAL_MODE) << "\n";
-    std::cout << "\n" << I18n::Get(StrKey::PART_CHOICE);
+    std::cout << "  1. Password Mode\n  2. API Key Mode\n  3. Fast Mode (256MB)\n\n" << I18n::Get(StrKey::PART_CHOICE);
+    int crMode = ReadInt();
+    if (crMode < 1 || crMode > 3) { Pause(); return; }
+    std::cout << "\n  " << I18n::Get(StrKey::PART_LOGICAL_MODE) << "\n  " << I18n::Get(StrKey::PART_PHYSICAL_MODE) << "\n\n" << I18n::Get(StrKey::PART_CHOICE);
     int mode = ReadInt();
-
-    std::string pass, keyPath, err;
+    std::string pass, apiKey, keyPath, err, target;
     if (mode == 1) {
         auto vols = FileCrypto::GetVolumes();
         std::cout << "\n" << I18n::Get(StrKey::PART_AVAIL_VOL) << "\n";
         for (size_t i = 0; i < vols.size(); ++i) {
             bool sys = FileCrypto::IsSystemDrive(vols[i]);
             uint64_t sz = FileCrypto::GetVolumeSize(vols[i]);
-            std::cout << "  " << (i + 1) << ". " << vols[i] << " (" << (sz/1073741824.0) << I18n::Get(StrKey::PART_GB) << ")";
+            std::cout << "  " << (i+1) << ". " << vols[i] << " (" << (sz/1073741824.0) << I18n::Get(StrKey::PART_GB) << ")";
             if (sys) std::cout << I18n::Get(StrKey::PART_SYS_BLOCKED);
             std::cout << "\n";
         }
         if (vols.empty()) { std::cout << "  --\n"; Pause(); return; }
         std::cout << "\n" << I18n::Get(StrKey::PART_SELECT) << " (1-" << vols.size() << "): ";
-        int c = ReadInt();
-        if (c < 1 || c > (int)vols.size()) { Pause(); return; }
-        std::string vol = vols[c - 1];
-        if (FileCrypto::IsSystemDrive(vol)) { std::cout << "\n" << I18n::Get(StrKey::PART_CANT_SYS) << "\n"; Pause(); return; }
-        std::cout << "\n" << I18n::Get(StrKey::PART_CONFIRM) << " " << vol << ": ";
+        int c = ReadInt(); if (c < 1 || c > (int)vols.size()) { Pause(); return; }
+        target = vols[c-1];
+        if (FileCrypto::IsSystemDrive(target)) { std::cout << "\n" << I18n::Get(StrKey::PART_CANT_SYS) << "\n"; Pause(); return; }
+        std::cout << "\n" << I18n::Get(StrKey::PART_CONFIRM) << " " << target << ": ";
         std::string confirm = ReadLineUtf8();
         if (confirm != "YES" && confirm != "yes") { std::cout << I18n::Get(StrKey::PART_CANCELLED) << "\n"; Pause(); return; }
-        std::cout << I18n::Get(StrKey::ENTER_PASSWORD); pass = ReadLineUtf8();
-        std::cout << "\n" << I18n::Get(StrKey::PART_ENCRYPTING) << " " << vol << "...\n";
-        if (FileCrypto::EncryptVolume(vol, pass, keyPath, err, ShowProgress))
-            std::cout << "\n" << I18n::Get(StrKey::PART_DONE) << " " << I18n::Get(StrKey::PART_RECOVERY) << ": " << keyPath << "\n";
+        if (crMode == 1 || crMode == 3) { std::cout << I18n::Get(StrKey::ENTER_PASSWORD); pass = ReadLineUtf8(); }
+        std::cout << "\nEncrypting " << target << "...\n[ESC to abort]\n";
+        bool ok; size_t maxB = (crMode == 3) ? 268435456 : 0;
+        if (crMode == 2) ok = FileCrypto::EncryptVolumeApi(target, keyPath, apiKey, err, ShowProgress);
+        else if (crMode == 3) ok = FileCrypto::EncryptVolumeFast(target, pass, maxB, keyPath, err);
+        else ok = FileCrypto::EncryptVolume(target, pass, keyPath, err, ShowProgress);
+        if (ok) { std::cout << "\n" << I18n::Get(StrKey::PART_DONE) << " " << I18n::Get(StrKey::PART_RECOVERY) << ": " << keyPath << "\n"; }
         else std::cout << "\n" << I18n::Get(StrKey::ERROR_PREFIX) << err << "\n";
     } else if (mode == 2) {
         auto disks = FileCrypto::GetPhysicalDisks();
@@ -269,167 +271,83 @@ static void DoVolumeEncrypt() {
         for (size_t i = 0; i < disks.size(); ++i) {
             bool sys = FileCrypto::IsDiskSystemDisk(disks[i]);
             uint64_t sz = FileCrypto::GetDiskSize(disks[i]);
-            std::cout << "  " << (i + 1) << ". Disk " << disks[i] << " (" << (sz/1073741824.0) << I18n::Get(StrKey::PART_GB) << ")";
+            std::cout << "  " << (i+1) << ". Disk " << disks[i] << " (" << (sz/1073741824.0) << I18n::Get(StrKey::PART_GB) << ")";
             if (sys) std::cout << I18n::Get(StrKey::PART_SYS_BLOCKED);
             std::cout << "\n";
         }
         if (disks.empty()) { std::cout << "  --\n"; Pause(); return; }
         std::cout << "\n" << I18n::Get(StrKey::PART_SELECT) << " (1-" << disks.size() << "): ";
-        int c = ReadInt();
-        if (c < 1 || c > (int)disks.size()) { Pause(); return; }
-        int dn = disks[c - 1];
+        int c = ReadInt(); if (c < 1 || c > (int)disks.size()) { Pause(); return; }
+        int dn = disks[c-1];
         if (FileCrypto::IsDiskSystemDisk(dn)) { std::cout << "\n" << I18n::Get(StrKey::PART_CANT_SYS) << "\n"; Pause(); return; }
         std::cout << "\n" << I18n::Get(StrKey::PART_CONFIRM) << " Disk " << dn << ": ";
         std::string confirm = ReadLineUtf8();
         if (confirm != "YES" && confirm != "yes") { std::cout << I18n::Get(StrKey::PART_CANCELLED) << "\n"; Pause(); return; }
-        std::cout << I18n::Get(StrKey::ENTER_PASSWORD); pass = ReadLineUtf8();
-        std::cout << "\n" << I18n::Get(StrKey::PART_ENCRYPTING) << " Disk " << dn << "...\n";
-        if (FileCrypto::EncryptDisk(dn, pass, keyPath, err, ShowProgress))
-            std::cout << "\n" << I18n::Get(StrKey::PART_DONE) << " " << I18n::Get(StrKey::PART_RECOVERY) << ": " << keyPath << "\n";
+        if (crMode == 1 || crMode == 3) { std::cout << I18n::Get(StrKey::ENTER_PASSWORD); pass = ReadLineUtf8(); }
+        std::cout << "\nEncrypting Disk " << dn << "...\n[ESC to abort]\n";
+        bool ok;
+        if (crMode == 2) ok = FileCrypto::EncryptDiskApi(dn, keyPath, apiKey, err, ShowProgress);
+        else if (crMode == 3) { std::string dev = "\\\\.\\PhysicalDrive" + std::to_string(dn); ok = FileCrypto::EncryptVolumeFast(dev, pass, 268435456, keyPath, err); }
+        else ok = FileCrypto::EncryptDisk(dn, pass, keyPath, err, ShowProgress);
+        if (ok) { std::cout << "\n" << I18n::Get(StrKey::PART_DONE) << " " << I18n::Get(StrKey::PART_RECOVERY) << ": " << keyPath << "\n"; }
         else std::cout << "\n" << I18n::Get(StrKey::ERROR_PREFIX) << err << "\n";
     }
     Pause();
 }
+
 static void DoVolumeDecrypt() {
     ClearScreen();
     std::cout << "=== " << I18n::Get(StrKey::PART_DEC) << " ===\n\n";
-    std::cout << I18n::Get(StrKey::PART_WARN) << "\n\n";
-    std::cout << "  " << I18n::Get(StrKey::PART_LOGICAL_MODE) << "\n";
-    std::cout << "  " << I18n::Get(StrKey::PART_PHYSICAL_MODE) << "\n";
-    std::cout << "\n" << I18n::Get(StrKey::PART_CHOICE);
+    std::cout << "  1. Password Mode\n  2. API Key Mode\n\n" << I18n::Get(StrKey::PART_CHOICE);
+    int crMode = ReadInt();
+    if (crMode < 1 || crMode > 2) { Pause(); return; }
+    std::cout << "\n  " << I18n::Get(StrKey::PART_LOGICAL_MODE) << "\n  " << I18n::Get(StrKey::PART_PHYSICAL_MODE) << "\n\n" << I18n::Get(StrKey::PART_CHOICE);
     int mode = ReadInt();
-
-    std::string pass, err;
+    std::string pass, apiKey, err, target;
     if (mode == 1) {
         auto vols = FileCrypto::GetVolumes();
         std::cout << "\n" << I18n::Get(StrKey::PART_AVAIL_VOL) << "\n";
-        for (size_t i = 0; i < vols.size(); ++i)
-            std::cout << "  " << (i + 1) << ". " << vols[i] << "\n";
-        if (vols.empty()) { std::cout << "  --\n"; Pause(); return; }
+        for (size_t i = 0; i < vols.size(); ++i) std::cout << "  " << (i+1) << ". " << vols[i] << "\n";
+        if (vols.empty()) { Pause(); return; }
         std::cout << "\n" << I18n::Get(StrKey::PART_SELECT) << " (1-" << vols.size() << "): ";
-        int c = ReadInt();
-        if (c < 1 || c > (int)vols.size()) { Pause(); return; }
-        std::string vol = vols[c - 1];
-        std::cout << "\n" << I18n::Get(StrKey::PART_CONFIRM) << " " << vol << ": ";
+        int c = ReadInt(); if (c < 1 || c > (int)vols.size()) { Pause(); return; }
+        target = vols[c-1];
+        std::cout << "\n" << I18n::Get(StrKey::PART_CONFIRM) << " " << target << ": ";
         std::string confirm = ReadLineUtf8();
         if (confirm != "YES" && confirm != "yes") { std::cout << I18n::Get(StrKey::PART_CANCELLED) << "\n"; Pause(); return; }
-        std::cout << I18n::Get(StrKey::ENTER_PASSWORD); pass = ReadLineUtf8();
-        std::cout << "\n" << I18n::Get(StrKey::PART_DECRYPTING) << " " << vol << "...\n";
-        if (FileCrypto::DecryptVolume(vol, pass, err, ShowProgress))
-            std::cout << "\n" << I18n::Get(StrKey::PART_DONE) << "\n";
+        if (crMode == 1) { std::cout << I18n::Get(StrKey::ENTER_PASSWORD); pass = ReadLineUtf8(); }
+        else {
+            std::string kp = "D:\\" + std::string(1, (char)tolower((unsigned char)target[0])) + "_api_recovery.key";
+            if (!FileCrypto::LoadKeyFile(kp, apiKey)) { std::cout << I18n::Get(StrKey::KEY_FILE_PATH); apiKey = ReadLineUtf8(); }
+        }
+        std::cout << "\nDecrypting " << target << "...\n[ESC to abort]\n";
+        bool ok = (crMode == 1) ? FileCrypto::DecryptVolume(target, pass, err, ShowProgress) : FileCrypto::DecryptVolumeApi(target, apiKey, err, ShowProgress);
+        if (ok) std::cout << "\n" << I18n::Get(StrKey::PART_DONE) << "\n";
         else std::cout << "\n" << I18n::Get(StrKey::ERROR_PREFIX) << err << "\n";
     } else if (mode == 2) {
         auto disks = FileCrypto::GetPhysicalDisks();
         std::cout << "\n" << I18n::Get(StrKey::PART_AVAIL_DISK) << "\n";
-        for (size_t i = 0; i < disks.size(); ++i)
-            std::cout << "  " << (i + 1) << ". Disk " << disks[i] << "\n";
-        if (disks.empty()) { std::cout << "  --\n"; Pause(); return; }
+        for (size_t i = 0; i < disks.size(); ++i) std::cout << "  " << (i+1) << ". Disk " << disks[i] << "\n";
+        if (disks.empty()) { Pause(); return; }
         std::cout << "\n" << I18n::Get(StrKey::PART_SELECT) << " (1-" << disks.size() << "): ";
-        int c = ReadInt();
-        if (c < 1 || c > (int)disks.size()) { Pause(); return; }
-        int dn = disks[c - 1];
+        int c = ReadInt(); if (c < 1 || c > (int)disks.size()) { Pause(); return; }
+        int dn = disks[c-1];
         std::cout << "\n" << I18n::Get(StrKey::PART_CONFIRM) << " Disk " << dn << ": ";
         std::string confirm = ReadLineUtf8();
         if (confirm != "YES" && confirm != "yes") { std::cout << I18n::Get(StrKey::PART_CANCELLED) << "\n"; Pause(); return; }
-        std::cout << I18n::Get(StrKey::ENTER_PASSWORD); pass = ReadLineUtf8();
-        std::cout << "\n" << I18n::Get(StrKey::PART_DECRYPTING) << " Disk " << dn << "...\n";
-        if (FileCrypto::DecryptDisk(dn, pass, err, ShowProgress))
-            std::cout << "\n" << I18n::Get(StrKey::PART_DONE) << "\n";
-        else std::cout << "\n" << I18n::Get(StrKey::ERROR_PREFIX) << err << "\n";
-    }
-    Pause();
-}
-static void DoVolumeApiEncrypt() {
-    ClearScreen();
-    std::cout << "=== Encrypt Partition (API Key) ===\n\n";
-    std::cout << I18n::Get(StrKey::PART_WARN) << "\n\n";
-    std::cout << "  1. Logical Volume\n  2. Physical Disk\n" << I18n::Get(StrKey::PART_CHOICE);
-    int mode = ReadInt();
-    std::string apiKey, keyPath, err, target;
-    if (mode == 1) {
-        auto vols = FileCrypto::GetVolumes();
-        for (size_t i = 0; i < vols.size(); ++i) {
-            bool sys = FileCrypto::IsSystemDrive(vols[i]);
-            std::cout << "  " << (i+1) << ". " << vols[i];
-            if (sys) std::cout << I18n::Get(StrKey::PART_SYS_BLOCKED);
-            std::cout << "\n";
+        if (crMode == 1) { std::cout << I18n::Get(StrKey::ENTER_PASSWORD); pass = ReadLineUtf8(); }
+        else {
+            std::string kp = "D:\\disk" + std::to_string(dn) + "_api_recovery.key";
+            if (!FileCrypto::LoadKeyFile(kp, apiKey)) { std::cout << I18n::Get(StrKey::KEY_FILE_PATH); apiKey = ReadLineUtf8(); }
         }
-        std::cout << "\n" << I18n::Get(StrKey::PART_SELECT) << ": ";
-        int c = ReadInt(); if (c < 1 || c > (int)vols.size()) { Pause(); return; }
-        target = vols[c-1];
-        if (FileCrypto::IsSystemDrive(target)) { std::cout << I18n::Get(StrKey::PART_CANT_SYS) << "\n"; Pause(); return; }
-        std::cout << I18n::Get(StrKey::PART_CONFIRM) << " " << target << ": ";
-        std::string confirm = ReadLineUtf8();
-        if (confirm != "YES" && confirm != "yes") { std::cout << I18n::Get(StrKey::PART_CANCELLED) << "\n"; Pause(); return; }
-        std::cout << "\nEncrypting " << target << "...\n[ESC to abort]\n";
-        if (FileCrypto::EncryptVolumeApi(target, keyPath, apiKey, err, ShowProgress)) {
-            std::cout << "\n" << I18n::Get(StrKey::PART_DONE) << "\n";
-            std::cout << "Recovery key: " << keyPath << "\n";
-        } else std::cout << "\n" << I18n::Get(StrKey::ERROR_PREFIX) << err << "\n";
-    } else if (mode == 2) {
-        auto disks = FileCrypto::GetPhysicalDisks();
-        for (size_t i = 0; i < disks.size(); ++i)
-            std::cout << "  " << (i+1) << ". Disk " << disks[i] << "\n";
-        std::cout << "\n" << I18n::Get(StrKey::PART_SELECT) << ": ";
-        int c = ReadInt(); if (c < 1 || c > (int)disks.size()) { Pause(); return; }
-        int dn = disks[c-1];
-        if (FileCrypto::IsDiskSystemDisk(dn)) { std::cout << I18n::Get(StrKey::PART_CANT_SYS) << "\n"; Pause(); return; }
-        std::cout << I18n::Get(StrKey::PART_CONFIRM) << " Disk " << dn << ": ";
-        std::string confirm = ReadLineUtf8();
-        if (confirm != "YES" && confirm != "yes") { std::cout << I18n::Get(StrKey::PART_CANCELLED) << "\n"; Pause(); return; }
-        std::cout << "\nEncrypting Disk " << dn << "...\n[ESC to abort]\n";
-        if (FileCrypto::EncryptDiskApi(dn, keyPath, apiKey, err, ShowProgress)) {
-            std::cout << "\n" << I18n::Get(StrKey::PART_DONE) << "\n";
-            std::cout << "Recovery key: " << keyPath << "\n";
-        } else std::cout << "\n" << I18n::Get(StrKey::ERROR_PREFIX) << err << "\n";
+        std::cout << "\nDecrypting Disk " << dn << "...\n[ESC to abort]\n";
+        bool ok = (crMode == 1) ? FileCrypto::DecryptDisk(dn, pass, err, ShowProgress) : FileCrypto::DecryptDiskApi(dn, apiKey, err, ShowProgress);
+        if (ok) std::cout << "\n" << I18n::Get(StrKey::PART_DONE) << "\n";
+        else std::cout << "\n" << I18n::Get(StrKey::ERROR_PREFIX) << err << "\n";
     }
     Pause();
 }
 
-static void DoVolumeApiDecrypt() {
-    ClearScreen();
-    std::cout << "=== Decrypt Partition (API Key) ===\n\n";
-    std::cout << "  1. Logical Volume\n  2. Physical Disk\n" << I18n::Get(StrKey::PART_CHOICE);
-    int mode = ReadInt();
-    std::string apiKey, err, target;
-    if (mode == 1) {
-        auto vols = FileCrypto::GetVolumes();
-        for (size_t i = 0; i < vols.size(); ++i)
-            std::cout << "  " << (i+1) << ". " << vols[i] << "\n";
-        std::cout << "\n" << I18n::Get(StrKey::PART_SELECT) << ": ";
-        int c = ReadInt(); if (c < 1 || c > (int)vols.size()) { Pause(); return; }
-        target = vols[c-1];
-        std::cout << I18n::Get(StrKey::PART_CONFIRM) << " " << target << ": ";
-        std::string confirm = ReadLineUtf8();
-        if (confirm != "YES" && confirm != "yes") { std::cout << I18n::Get(StrKey::PART_CANCELLED) << "\n"; Pause(); return; }
-        // Try load .key file
-        std::string kp = target + "_api_recovery.key";
-        if (!FileCrypto::LoadKeyFile("D:\\" + kp, apiKey)) {
-            std::cout << I18n::Get(StrKey::KEY_FILE_PATH); apiKey = ReadLineUtf8();
-        }
-        if (FileCrypto::DecryptVolumeApi(target, apiKey, err, ShowProgress))
-            std::cout << "\n" << I18n::Get(StrKey::PART_DONE) << "\n";
-        else std::cout << "\n" << I18n::Get(StrKey::ERROR_PREFIX) << err << "\n";
-    } else if (mode == 2) {
-        auto disks = FileCrypto::GetPhysicalDisks();
-        for (size_t i = 0; i < disks.size(); ++i)
-            std::cout << "  " << (i+1) << ". Disk " << disks[i] << "\n";
-        std::cout << "\n" << I18n::Get(StrKey::PART_SELECT) << ": ";
-        int c = ReadInt(); if (c < 1 || c > (int)disks.size()) { Pause(); return; }
-        int dn = disks[c-1];
-        std::cout << I18n::Get(StrKey::PART_CONFIRM) << " Disk " << dn << ": ";
-        std::string confirm = ReadLineUtf8();
-        if (confirm != "YES" && confirm != "yes") { std::cout << I18n::Get(StrKey::PART_CANCELLED) << "\n"; Pause(); return; }
-        std::string kp = "D:\\disk" + std::to_string(dn) + "_api_recovery.key";
-        if (!FileCrypto::LoadKeyFile(kp, apiKey)) {
-            std::cout << I18n::Get(StrKey::KEY_FILE_PATH); apiKey = ReadLineUtf8();
-        }
-        if (FileCrypto::DecryptDiskApi(dn, apiKey, err, ShowProgress))
-            std::cout << "\n" << I18n::Get(StrKey::PART_DONE) << "\n";
-        else std::cout << "\n" << I18n::Get(StrKey::ERROR_PREFIX) << err << "\n";
-    }
-    Pause();
-}
 
 int main() {
     SetConsoleOutputCP(CP_UTF8);
@@ -460,8 +378,8 @@ int main() {
             case 5: ShowLanguageMenu(); break;
             case 7: DoVolumeEncrypt(); break;
             case 8: DoVolumeDecrypt(); break;
-            case 9: DoVolumeApiEncrypt(); break;
-            case 10: DoVolumeApiDecrypt(); break;
+            
+            
             case 12: std::cout << "\n" << I18n::Get(StrKey::GOODBYE) << "\n"; return 0;
             default: std::cout << "\n" << I18n::Get(StrKey::INVALID_CHOICE) << "\n"; Pause();
         }
