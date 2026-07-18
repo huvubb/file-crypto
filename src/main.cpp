@@ -2,12 +2,15 @@
 #include "config.hpp"
 #include "crypto.hpp"
 #include <cstdio>
+#include <cstdlib>
 #include <iostream>
 #include <string>
 #include <limits>
 #include <random>
 #include <chrono>
 #include <windows.h>
+#include <dbghelp.h>
+#pragma comment(lib, "dbghelp.lib")
 
 #ifdef EncryptFile
 #undef EncryptFile
@@ -398,7 +401,46 @@ static void DoVolumeDecrypt() {
 }
 
 
+
+// === Crash Handler ===
+static LONG WINAPI MyCrashHandler(EXCEPTION_POINTERS* ep) {
+    DWORD code = ep->ExceptionRecord->ExceptionCode;
+    void* addr = ep->ExceptionRecord->ExceptionAddress;
+    char buf[512];
+    snprintf(buf, sizeof(buf),
+        "\n*** CRASH DETECTED ***\n"
+        "Exception: 0x%08X at 0x%p\n"
+        "The program will now exit.\n", code, addr);
+    std::cerr << buf;
+    // Try to get module name
+    HMODULE hMod;
+    MEMORY_BASIC_INFORMATION mbi;
+    if (VirtualQuery(addr, &mbi, sizeof(mbi))) {
+        hMod = (HMODULE)mbi.AllocationBase;
+        WCHAR modName[MAX_PATH];
+        if (GetModuleFileNameW(hMod, modName, MAX_PATH)) {
+            std::wcerr << L"Module: " << modName << L"\n";
+        }
+    }
+    std::cerr << "\nPress Enter to exit...";
+    std::cin.get();
+    return EXCEPTION_EXECUTE_HANDLER;
+}
+
+static void InstallCrashHandler() {
+    SetUnhandledExceptionFilter(MyCrashHandler);
+    // Also enable for pure virtual call and other CRT failures
+    _set_purecall_handler([]() {
+        std::cerr << "\n*** PURE VIRTUAL CALL ***\nPress Enter...";
+        std::cin.get();
+    });
+    _set_invalid_parameter_handler([](const wchar_t*, const wchar_t*, const wchar_t*, unsigned int, uintptr_t) {
+        std::cerr << "\n*** INVALID PARAMETER ***\nPress Enter...";
+        std::cin.get();
+    });
+}
 int main() {
+    InstallCrashHandler();
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
     if (Config::Exists()) I18n::SetLanguage(Config::LoadLanguage());
