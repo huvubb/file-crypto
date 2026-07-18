@@ -466,3 +466,362 @@ bool FileCrypto::LoadKeyFile(const std::string& keyPath, std::string& apiKeyOut)
         apiKeyOut.pop_back();
     return true;
 }
+
+// ==================== Volume Operations ====================
+
+static constexpr const char* VOL_MAGIC = "CRYPTVOL";
+static constexpr size_t VOL_HDR = 8192;  // 8KB volume header
+
+std::vector<std::string> FileCrypto::GetVolumes() {
+    std::vector<std::string> vols;
+    DWORD drives = GetLogicalDrives();
+    WCHAR sysRoot[MAX_PATH];
+    GetWindowsDirectoryW(sysRoot, MAX_PATH);
+    std::wstring sysVol; sysVol += sysRoot[0]; sysVol += L":";
+
+    for (int i = 0; i < 26; ++i) {
+        if (drives & (1 << i)) {
+            WCHAR root[4] = { (WCHAR)(L'A' + i), L':', L'\\', 0 };
+            UINT dt = GetDriveTypeW(root);
+            if (dt == DRIVE_FIXED || dt == DRIVE_REMOVABLE) {
+                std::string vol; vol += (char)('A' + i); vol += ":";
+                vols.push_back(vol);
+            }
+        }
+    }
+    return vols;
+}
+
+bool FileCrypto::IsSystemDrive(const std::string& vol) {
+    WCHAR sysRoot[MAX_PATH];
+    GetWindowsDirectoryW(sysRoot, MAX_PATH);
+    char sysLetter = (char)sysRoot[0];
+    return (vol.size() >= 1 && (vol[0] == sysLetter || vol[0] == (sysLetter + 32)));
+}
+
+uint64_t FileCrypto::GetVolumeSize(const std::string& vol) {
+    std::string devPath = "\\\\.\\" + vol;
+    HANDLE h = CreateFileW(
+        std::filesystem::path(std::wstring(devPath.begin(), devPath.end())).c_str(),
+        GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+    if (h == INVALID_HANDLE_VALUE) return 0;
+
+    GET_LENGTH_INFORMATION gli;
+    DWORD bytes;
+    BOOL ok = DeviceIoControl(h, IOCTL_DISK_GET_LENGTH_INFO, NULL, 0, &gli, sizeof(gli), &bytes, NULL);
+    CloseHandle(h);
+    return ok ? gli.Length.QuadPart : 0;
+}
+
+static std::wstring ToWStr(const std::string& s) {
+    int len = MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, NULL, 0);
+    if (len <= 1) return L"";
+    std::wstring ws(len - 1, 0);
+    MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, &ws[0], len);
+    return ws;
+}
+
+static HANDLE OpenVolumeLocked(const std::string& vol, std::string& errorMsg) {
+    std::string devPath = "\\\\.\\" + vol;
+    std::wstring wdev = ToWStr(devPath);
+    HANDLE h = CreateFileW(wdev.c_str(), GENERIC_READ | GENERIC_WRITE,
+                           FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+    if (h == INVALID_HANDLE_VALUE) {
+        errorMsg = "Cannot open volume " + vol + " (run as Administrator)";
+        return INVALID_HANDLE_VALUE;
+    }
+    DWORD bytes;
+    if (!DeviceIoControl(h, FSCTL_LOCK_VOLUME, NULL, 0, NULL, 0, &bytes, NULL)) {
+        DeviceIoControl(h, FSCTL_DISMOUNT_VOLUME, NULL, 0, NULL, 0, &bytes, NULL);
+        Sleep(500);
+        if (!DeviceIoControl(h, FSCTL_LOCK_VOLUME, NULL, 0, NULL, 0, &bytes, NULL)) {
+            CloseHandle(h);
+            errorMsg = "Cannot lock volume - close all programs using it";
+            return INVALID_HANDLE_VALUE;
+        }
+    }
+    return h;
+}
+
+bool FileCrypto::EncryptVolume(const std::string& volume,
+                                const std::string& password,
+                                std::string& keyPathOut,
+                                std::string& errorMsg,
+                                void (*progressCb)(const std::string&, size_t, size_t)) {
+    try {
+        if (IsSystemDrive(volume)) {
+            errorMsg = "Cannot encrypt system drive!";
+            return false;
+        }
+
+        uint64_t volSize = GetVolumeSize(volume);
+        if (volSize == 0 || volSize < 1048576) {
+            errorMsg = "Volume too small or inaccessible";
+            return false;
+        }
+
+        HANDLE h = OpenVolumeLocked(volume, errorMsg);
+        if (h == INVALID_HANDLE_VALUE) return false;
+
+        uint8_t salt[16], iv[AES_BLOCK];
+        RandBytes(salt, 16); RandBytes(iv, AES_BLOCK);
+        uint8_t key[32];
+        DeriveKey(password, salt, 16, key, 32);
+
+        std::string apiKey = std::string(KEY_PREFIX) + Base64Encode(key, 32);
+        keyPathOut = "D:\\" + std::string(1, (char)tolower((unsigned char)volume[0])) + "_recovery.key";
+        SaveKeyFile(keyPathOut, apiKey);
+
+        constexpr size_t BUF_SIZE = 1048576;
+        std::vector<uint8_t> buf(BUF_SIZE);
+        std::vector<uint8_t> encBuf;
+
+        std::vector<uint8_t> hdr(VOL_HDR, 0);
+        memcpy(hdr.data(), salt, 16);
+        memcpy(hdr.data() + 16, iv, AES_BLOCK);
+        memcpy(hdr.data() + 32, VOL_MAGIC, 8);
+        DWORD written;
+        SetFilePointer(h, 0, NULL, FILE_BEGIN);
+        WriteFile(h, hdr.data(), VOL_HDR, &written, NULL);
+
+        uint64_t offset = VOL_HDR;
+        uint64_t remaining = volSize - VOL_HDR;
+        uint64_t totalToEncrypt = remaining;
+
+        while (remaining > 0) {
+            size_t chunk = (size_t)(remaining > BUF_SIZE ? BUF_SIZE : remaining);
+            DWORD red;
+            LARGE_INTEGER li; li.QuadPart = offset;
+            SetFilePointerEx(h, li, NULL, FILE_BEGIN);
+            if (!ReadFile(h, buf.data(), (DWORD)chunk, &red, NULL) || red == 0) break;
+            if (red < chunk) chunk = red;
+
+            size_t padChunk = ((chunk / AES_BLOCK) + 1) * AES_BLOCK;
+            std::vector<uint8_t> padded(padChunk);
+            memcpy(padded.data(), buf.data(), chunk);
+            uint8_t pv = (uint8_t)(AES_BLOCK - (chunk % AES_BLOCK));
+            if (chunk % AES_BLOCK == 0) pv = AES_BLOCK;
+            for (size_t j = chunk; j < padChunk; ++j) padded[j] = pv;
+
+            uint8_t sectorIv[AES_BLOCK];
+            ComputeSha256((uint8_t*)&offset, sizeof(offset), sectorIv);
+            for (int j = 0; j < AES_BLOCK; ++j) sectorIv[j] ^= iv[j];
+
+            AesCbcEncrypt(key, sectorIv, padded.data(), padChunk, encBuf);
+
+            SetFilePointerEx(h, li, NULL, FILE_BEGIN);
+            WriteFile(h, encBuf.data(), (DWORD)encBuf.size(), &written, NULL);
+
+            offset += chunk;
+            remaining -= chunk;
+
+            if (progressCb) progressCb("Encrypting", (size_t)(totalToEncrypt - remaining), (size_t)totalToEncrypt);
+            SecureWipe(buf); SecureWipe(padded); SecureWipe(encBuf);
+        }
+
+        SecureZeroMemory(key, 32);
+        CloseHandle(h);
+        return true;
+    } catch (const std::exception& e) { errorMsg = e.what(); return false; }
+    catch (...) { errorMsg = "Unknown error"; return false; }
+}
+
+bool FileCrypto::DecryptVolume(const std::string& volume,
+                                const std::string& password,
+                                std::string& errorMsg,
+                                void (*progressCb)(const std::string&, size_t, size_t)) {
+    try {
+        uint64_t volSize = GetVolumeSize(volume);
+        if (volSize == 0) { errorMsg = "Volume inaccessible"; return false; }
+
+        HANDLE h = OpenVolumeLocked(volume, errorMsg);
+        if (h == INVALID_HANDLE_VALUE) return false;
+
+        std::vector<uint8_t> hdr(VOL_HDR);
+        DWORD red;
+        SetFilePointer(h, 0, NULL, FILE_BEGIN);
+        if (!ReadFile(h, hdr.data(), VOL_HDR, &red, NULL) || red < VOL_HDR) {
+            CloseHandle(h);
+            errorMsg = "Cannot read volume header";
+            return false;
+        }
+
+        if (memcmp(hdr.data() + 32, VOL_MAGIC, 8) != 0) {
+            CloseHandle(h);
+            errorMsg = "Volume is not encrypted by this tool";
+            return false;
+        }
+
+        uint8_t salt[16], iv[AES_BLOCK];
+        memcpy(salt, hdr.data(), 16);
+        memcpy(iv, hdr.data() + 16, AES_BLOCK);
+        uint8_t key[32];
+        DeriveKey(password, salt, 16, key, 32);
+
+        constexpr size_t BUF_SIZE = 1048576;
+        std::vector<uint8_t> buf(BUF_SIZE);
+        std::vector<uint8_t> decBuf;
+
+        uint64_t offset = VOL_HDR;
+        uint64_t remaining = volSize - VOL_HDR;
+        uint64_t totalToDecrypt = remaining;
+
+        while (remaining > 0) {
+            size_t chunk = (size_t)(remaining > BUF_SIZE ? BUF_SIZE : remaining);
+            LARGE_INTEGER li; li.QuadPart = offset;
+            SetFilePointerEx(h, li, NULL, FILE_BEGIN);
+            if (!ReadFile(h, buf.data(), (DWORD)chunk, &red, NULL) || red == 0) break;
+            if (red < chunk) chunk = red;
+
+            uint8_t sectorIv[AES_BLOCK];
+            ComputeSha256((uint8_t*)&offset, sizeof(offset), sectorIv);
+            for (int j = 0; j < AES_BLOCK; ++j) sectorIv[j] ^= iv[j];
+
+            AesCbcDecrypt(key, sectorIv, buf.data(), chunk, decBuf);
+
+            uint8_t pv = decBuf.back();
+            size_t origLen = chunk;
+            if (pv > 0 && pv <= AES_BLOCK) origLen = decBuf.size() - pv;
+
+            SetFilePointerEx(h, li, NULL, FILE_BEGIN);
+            DWORD written;
+            WriteFile(h, decBuf.data(), (DWORD)origLen, &written, NULL);
+
+            offset += chunk;
+            remaining -= chunk;
+
+            if (progressCb) progressCb("Decrypting", (size_t)(totalToDecrypt - remaining), (size_t)totalToDecrypt);
+            SecureWipe(buf); SecureWipe(decBuf);
+        }
+
+        SecureZeroMemory(key, 32);
+        CloseHandle(h);
+        return true;
+    } catch (const std::exception& e) { errorMsg = e.what(); return false; }
+    catch (...) { errorMsg = "Unknown error"; return false; }
+}
+// ==== DISK FUNCTIONS ====
+#include <vector>
+#include <string>
+
+std::vector<int> FileCrypto::GetPhysicalDisks() {
+    std::vector<int> disks;
+    for (int i = 0; i < 16; ++i) {
+        std::string path = "\\\\.\\PhysicalDrive" + std::to_string(i);
+        HANDLE h = CreateFileA(path.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+        if (h != INVALID_HANDLE_VALUE) { disks.push_back(i); CloseHandle(h); }
+    }
+    return disks;
+}
+
+bool FileCrypto::IsDiskSystemDisk(int diskNum) {
+    WCHAR sysRoot[MAX_PATH]; GetWindowsDirectoryW(sysRoot, MAX_PATH);
+    char sysLetter = (char)sysRoot[0];
+    WCHAR volName[MAX_PATH];
+    HANDLE volFind = FindFirstVolumeW(volName, MAX_PATH);
+    if (volFind == INVALID_HANDLE_VALUE) return (diskNum == 0);
+    bool found = false;
+    do {
+        WCHAR paths[MAX_PATH]; DWORD len;
+        if (GetVolumePathNamesForVolumeNameW(volName, paths, MAX_PATH, &len) && paths[0]) {
+            if (paths[0] == sysLetter || paths[0] == (sysLetter + 32) || paths[0] == (sysLetter - 32)) {
+                std::wstring vn(volName); vn.pop_back();
+                HANDLE vh = CreateFileW(vn.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+                if (vh != INVALID_HANDLE_VALUE) {
+                    VOLUME_DISK_EXTENTS ext; DWORD rb;
+                    if (DeviceIoControl(vh, IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS, NULL, 0, &ext, sizeof(ext), &rb, NULL)) {
+                        for (DWORD j = 0; j < ext.NumberOfDiskExtents; ++j) {
+                            if ((int)ext.Extents[j].DiskNumber == diskNum) { found = true; }
+                        }
+                    }
+                    CloseHandle(vh);
+                }
+            }
+        }
+    } while (!found && FindNextVolumeW(volFind, volName, MAX_PATH));
+    FindVolumeClose(volFind);
+    return found;
+}
+
+uint64_t FileCrypto::GetDiskSize(int diskNum) {
+    std::string path = "\\\\.\\PhysicalDrive" + std::to_string(diskNum);
+    HANDLE h = CreateFileA(path.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+    if (h == INVALID_HANDLE_VALUE) return 0;
+    GET_LENGTH_INFORMATION gli; DWORD bytes;
+    BOOL ok = DeviceIoControl(h, IOCTL_DISK_GET_LENGTH_INFO, NULL, 0, &gli, sizeof(gli), &bytes, NULL);
+    CloseHandle(h);
+    return ok ? gli.Length.QuadPart : 0;
+}
+
+bool FileCrypto::EncryptDisk(int diskNum, const std::string& password, std::string& keyPathOut, std::string& errorMsg, void (*progressCb)(const std::string&, size_t, size_t)) {
+    if (IsDiskSystemDisk(diskNum)) { errorMsg = "Cannot encrypt system disk!"; return false; }
+    std::string devPath = "\\\\.\\PhysicalDrive" + std::to_string(diskNum);
+    uint64_t sz = GetDiskSize(diskNum);
+    if (sz == 0) { errorMsg = "Disk inaccessible"; return false; }
+    HANDLE h = CreateFileA(devPath.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+    if (h == INVALID_HANDLE_VALUE) { errorMsg = "Cannot open disk (run as Administrator)"; return false; }
+    uint8_t salt[16], iv[AES_BLOCK]; RandBytes(salt,16); RandBytes(iv,AES_BLOCK);
+    uint8_t key[32]; DeriveKey(password, salt, 16, key, 32);
+    std::string apiKey = std::string(KEY_PREFIX) + Base64Encode(key, 32);
+    keyPathOut = "D:\\disk" + std::to_string(diskNum) + "_recovery.key";
+    SaveKeyFile(keyPathOut, apiKey);
+    std::vector<uint8_t> hdr(VOL_HDR, 0);
+    memcpy(hdr.data(), salt, 16); memcpy(hdr.data()+16, iv, AES_BLOCK); memcpy(hdr.data()+32, VOL_MAGIC, 8);
+    DWORD written; SetFilePointer(h, 0, NULL, FILE_BEGIN); WriteFile(h, hdr.data(), VOL_HDR, &written, NULL);
+    constexpr size_t BS = 1048576; std::vector<uint8_t> buf(BS), encBuf;
+    uint64_t off = VOL_HDR, rem = sz - VOL_HDR, total = rem;
+    while (rem > 0) {
+        size_t ch = (size_t)(rem > BS ? BS : rem); DWORD red;
+        LARGE_INTEGER li; li.QuadPart = off; SetFilePointerEx(h, li, NULL, FILE_BEGIN);
+        if (!ReadFile(h, buf.data(), (DWORD)ch, &red, NULL) || red == 0) break;
+        if (red < ch) ch = red;
+        size_t padCh = ((ch / AES_BLOCK) + 1) * AES_BLOCK;
+        std::vector<uint8_t> pad(padCh); memcpy(pad.data(), buf.data(), ch);
+        uint8_t pv = (uint8_t)(AES_BLOCK - (ch % AES_BLOCK)); if (ch % AES_BLOCK == 0) pv = AES_BLOCK;
+        for (size_t j = ch; j < padCh; ++j) pad[j] = pv;
+        uint8_t siv[AES_BLOCK]; ComputeSha256((uint8_t*)&off, sizeof(off), siv);
+        for (int j = 0; j < AES_BLOCK; ++j) siv[j] ^= iv[j];
+        AesCbcEncrypt(key, siv, pad.data(), padCh, encBuf);
+        SetFilePointerEx(h, li, NULL, FILE_BEGIN);
+        WriteFile(h, encBuf.data(), (DWORD)encBuf.size(), &written, NULL);
+        off += ch; rem -= ch;
+        if (progressCb) progressCb("Encrypting", (size_t)(total - rem), (size_t)total);
+        SecureWipe(buf); SecureWipe(pad); SecureWipe(encBuf);
+    }
+    SecureZeroMemory(key, 32); CloseHandle(h);
+    return true;
+}
+
+bool FileCrypto::DecryptDisk(int diskNum, const std::string& password, std::string& errorMsg, void (*progressCb)(const std::string&, size_t, size_t)) {
+    std::string devPath = "\\\\.\\PhysicalDrive" + std::to_string(diskNum);
+    uint64_t sz = GetDiskSize(diskNum);
+    if (sz == 0) { errorMsg = "Disk inaccessible"; return false; }
+    HANDLE h = CreateFileA(devPath.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+    if (h == INVALID_HANDLE_VALUE) { errorMsg = "Cannot open disk (run as Administrator)"; return false; }
+    std::vector<uint8_t> hdr(VOL_HDR); DWORD red;
+    SetFilePointer(h, 0, NULL, FILE_BEGIN);
+    if (!ReadFile(h, hdr.data(), VOL_HDR, &red, NULL) || red < VOL_HDR) { CloseHandle(h); errorMsg = "Cannot read header"; return false; }
+    if (memcmp(hdr.data()+32, VOL_MAGIC, 8)) { CloseHandle(h); errorMsg = "Disk not encrypted by this tool"; return false; }
+    uint8_t salt[16], iv[AES_BLOCK]; memcpy(salt, hdr.data(), 16); memcpy(iv, hdr.data()+16, AES_BLOCK);
+    uint8_t key[32]; DeriveKey(password, salt, 16, key, 32);
+    constexpr size_t BS = 1048576; std::vector<uint8_t> buf(BS), decBuf;
+    uint64_t off = VOL_HDR, rem = sz - VOL_HDR, total = rem;
+    while (rem > 0) {
+        size_t ch = (size_t)(rem > BS ? BS : rem);
+        LARGE_INTEGER li; li.QuadPart = off; SetFilePointerEx(h, li, NULL, FILE_BEGIN);
+        if (!ReadFile(h, buf.data(), (DWORD)ch, &red, NULL) || red == 0) break;
+        if (red < ch) ch = red;
+        uint8_t siv[AES_BLOCK]; ComputeSha256((uint8_t*)&off, sizeof(off), siv);
+        for (int j = 0; j < AES_BLOCK; ++j) siv[j] ^= iv[j];
+        AesCbcDecrypt(key, siv, buf.data(), ch, decBuf);
+        uint8_t pv = decBuf.back(); size_t ol = ch;
+        if (pv > 0 && pv <= AES_BLOCK) ol = decBuf.size() - pv;
+        SetFilePointerEx(h, li, NULL, FILE_BEGIN);
+        DWORD written; WriteFile(h, decBuf.data(), (DWORD)ol, &written, NULL);
+        off += ch; rem -= ch;
+        if (progressCb) progressCb("Decrypting", (size_t)(total - rem), (size_t)total);
+        SecureWipe(buf); SecureWipe(decBuf);
+    }
+    SecureZeroMemory(key, 32); CloseHandle(h);
+    return true;
+}
