@@ -715,7 +715,7 @@ std::vector<int> FileCrypto::GetPhysicalDisks() {
 }
 
 bool FileCrypto::IsDiskSystemDisk(int diskNum) {
-    // Check all volumes to see if any has Windows\System32 AND is on this disk
+    // Check all volumes for system DLLs and verify disk membership
     WCHAR volName[MAX_PATH];
     HANDLE volFind = FindFirstVolumeW(volName, MAX_PATH);
     if (volFind == INVALID_HANDLE_VALUE) return false;
@@ -723,12 +723,14 @@ bool FileCrypto::IsDiskSystemDisk(int diskNum) {
     do {
         WCHAR paths[MAX_PATH]; DWORD len;
         if (GetVolumePathNamesForVolumeNameW(volName, paths, MAX_PATH, &len) && paths[0]) {
-            // Check if this volume has Windows\System32
-            std::string checkPath;
-            checkPath += (char)paths[0]; checkPath += ":\\Windows\\System32";
-            DWORD attr = GetFileAttributesA(checkPath.c_str());
-            if (attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY)) {
-                // This is a system volume - check if on our disk
+            // Verify system DLLs
+            char drive = (char)paths[0];
+            std::string ntos = std::string(1, drive) + ":\\Windows\\System32\\ntoskrnl.exe";
+            std::string ntdll = std::string(1, drive) + ":\\Windows\\System32\\ntdll.dll";
+            DWORD a1 = GetFileAttributesA(ntos.c_str());
+            DWORD a2 = GetFileAttributesA(ntdll.c_str());
+            if (a1 != INVALID_FILE_ATTRIBUTES && a2 != INVALID_FILE_ATTRIBUTES) {
+                // System volume confirmed - check disk
                 std::wstring vn(volName); vn.pop_back();
                 HANDLE vh = CreateFileW(vn.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
                 if (vh != INVALID_HANDLE_VALUE) {
