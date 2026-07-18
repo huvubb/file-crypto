@@ -55,6 +55,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_am() {
         {StrKey::DEC_PROMPT, "ዲክሪፕት"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -94,6 +95,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_ar() {
         {StrKey::DEC_PROMPT, "فك تشفير"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "إخلاء مسؤولية: المؤلف غير مسؤول عن أي فقدان للبيانات أو ضرر ناتج عن هذا البرنامج."},
     };
 }
 
@@ -133,6 +135,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_bg() {
         {StrKey::DEC_PROMPT, "Декриптиране"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -172,6 +175,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_bn() {
         {StrKey::DEC_PROMPT, "ডিক্রিপ্ট"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "দাবিত্যাগ: এই সফটওয়্যার ব্যবহারের ফলে কোনো ডেটা ক্ষতি বা ক্ষতির জন্য লেখক দায়ী নন।"},
     };
 }
 
@@ -211,6 +215,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_cn_tw() {
         {StrKey::DEC_PROMPT, "解密"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "歡迎貢獻翻譯！WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "免責聲明：作者不對使用本軟體造成的任何資料遺失或損壞承擔責任。"},
     };
 }
 
@@ -250,6 +255,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_cs() {
         {StrKey::DEC_PROMPT, "Desifrovat"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -289,6 +295,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_da() {
         {StrKey::DEC_PROMPT, "Dekrypter"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -328,6 +335,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_de() {
         {StrKey::DEC_PROMPT, "Entschluesseln"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Haftungsausschluss: Der Autor übernimmt keine Verantwortung für Datenverluste oder Schäden durch diese Software."},
     };
 }
 
@@ -367,6 +375,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_el() {
         {StrKey::DEC_PROMPT, "Αποκρυπτογράφηση"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -406,6 +415,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_en() {
         {StrKey::DEC_PROMPT, "Decrypt"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -445,6 +455,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_es() {
         {StrKey::DEC_PROMPT, "Descifrar"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Descargo: El autor no se responsabiliza por pérdida de datos o daños causados por este software."},
     };
 }
 
@@ -484,6 +495,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_fa() {
         {StrKey::DEC_PROMPT, "رمزگشایی"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -523,6 +535,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_fi() {
         {StrKey::DEC_PROMPT, "Pura"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -562,6 +575,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_fil() {
         {StrKey::DEC_PROMPT, "I-decrypt"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -601,6 +615,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_fr() {
         {StrKey::DEC_PROMPT, "Dechiffrer"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Avertissement: L'auteur n'est pas responsable des pertes de données ou dommages causés par ce logiciel."},
     };
 }
 
@@ -640,6 +655,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_gu() {
         {StrKey::DEC_PROMPT, "ડિક્રિપ્ટ"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -679,6 +695,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_he() {
         {StrKey::DEC_PROMPT, "פענח"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -718,6 +735,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_hi() {
         {StrKey::DEC_PROMPT, "डिक्रिप्ट"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "अस्वीकरण: लेखक इस सॉफ़्टवेयर के उपयोग से होने वाली किसी भी डेटा हानि या क्षति के लिए जिम्मेदार नहीं है।"},
     };
 }
 
@@ -757,6 +775,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_hr() {
         {StrKey::DEC_PROMPT, "Desifriraj"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -796,6 +815,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_hu() {
         {StrKey::DEC_PROMPT, "Visszafejt"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -835,6 +855,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_id() {
         {StrKey::DEC_PROMPT, "Dekripsi"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -874,6 +895,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_it() {
         {StrKey::DEC_PROMPT, "Decifra"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: L'autore non è responsabile per perdite di dati o danni causati da questo software."},
     };
 }
 
@@ -913,6 +935,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_ja() {
         {StrKey::DEC_PROMPT, "復号"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "免責事項：作者はこのソフトウェアの使用によるいかなるデータ損失や損害についても責任を負いません。"},
     };
 }
 
@@ -952,6 +975,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_km() {
         {StrKey::DEC_PROMPT, "ឌិគ្រីប"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -991,6 +1015,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_kn() {
         {StrKey::DEC_PROMPT, "ಡಿಕ್ರಿಪ್ಟ್"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -1030,6 +1055,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_ko() {
         {StrKey::DEC_PROMPT, "복호화"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "면책 조항: 작성자는 이 소프트웨어 사용으로 인한 데이터 손실이나 손해에 대해 책임을 지지 않습니다."},
     };
 }
 
@@ -1069,6 +1095,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_lo() {
         {StrKey::DEC_PROMPT, "ຖອດລະຫັດ"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -1108,6 +1135,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_mr() {
         {StrKey::DEC_PROMPT, "डिक्रिप्ट"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -1147,6 +1175,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_ms() {
         {StrKey::DEC_PROMPT, "Nyahsulit"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -1186,6 +1215,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_my() {
         {StrKey::DEC_PROMPT, "စာဖွင့်ရန်"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -1225,6 +1255,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_ne() {
         {StrKey::DEC_PROMPT, "डिक्रिप्ट"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -1264,6 +1295,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_nl() {
         {StrKey::DEC_PROMPT, "Ontsleutelen"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -1303,6 +1335,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_no() {
         {StrKey::DEC_PROMPT, "Dekrypter"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -1342,6 +1375,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_pa() {
         {StrKey::DEC_PROMPT, "ਡੀਕ੍ਰਿਪਟ"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -1381,6 +1415,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_pl() {
         {StrKey::DEC_PROMPT, "Odszyfruj"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -1420,6 +1455,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_pt() {
         {StrKey::DEC_PROMPT, "Descriptografar"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Aviso: O autor não se responsabiliza por perda de dados ou danos causados por este software."},
     };
 }
 
@@ -1459,6 +1495,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_ro() {
         {StrKey::DEC_PROMPT, "Decriptare"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -1498,6 +1535,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_ru() {
         {StrKey::DEC_PROMPT, "Расшифровать"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Отказ от ответственности: Автор не несет ответственности за потерю данных или ущерб от использования ПО."},
     };
 }
 
@@ -1537,6 +1575,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_si() {
         {StrKey::DEC_PROMPT, "විසංකේතනය"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -1576,6 +1615,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_sr() {
         {StrKey::DEC_PROMPT, "Desifruj"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -1615,6 +1655,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_sv() {
         {StrKey::DEC_PROMPT, "Dekryptera"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -1654,6 +1695,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_sw() {
         {StrKey::DEC_PROMPT, "Fumbua"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -1693,6 +1735,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_ta() {
         {StrKey::DEC_PROMPT, "மறைகுறிநீக்கு"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -1732,6 +1775,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_te() {
         {StrKey::DEC_PROMPT, "డీక్రిప్ట్"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -1771,6 +1815,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_th() {
         {StrKey::DEC_PROMPT, "ถอดรหัส"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -1810,6 +1855,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_tr() {
         {StrKey::DEC_PROMPT, "Coz"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -1849,6 +1895,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_uk() {
         {StrKey::DEC_PROMPT, "Розшифрувати"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -1888,6 +1935,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_ur() {
         {StrKey::DEC_PROMPT, "ڈیکرپٹ"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -1927,6 +1975,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_vi() {
         {StrKey::DEC_PROMPT, "Giai ma"},
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
+        {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
     };
 }
 
@@ -1966,6 +2015,7 @@ static std::unordered_map<StrKey, std::string> Make_lang_zh_CN() {
         {StrKey::DEC_PROMPT, "解密"},
         {StrKey::CONTACT_INFO, "微信: forever870422  邮箱: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "欢迎贡献翻译！微信: forever870422"},
+        {StrKey::DISCLAIMER, "免责声明：作者不对使用本软件造成的任何数据丢失或损坏承担责任。"},
     };
 }
 
