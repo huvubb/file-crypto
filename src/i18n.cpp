@@ -56,6 +56,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_am() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -96,6 +98,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_ar() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "إخلاء مسؤولية: المؤلف غير مسؤول عن أي فقدان للبيانات أو ضرر ناتج عن هذا البرنامج."},
+        {StrKey::PART_ENC, "7. تشفير القسم"},
+        {StrKey::PART_DEC, "8. فك تشفير القسم"},
     };
 }
 
@@ -136,6 +140,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_bg() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -176,6 +182,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_bn() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "দাবিত্যাগ: এই সফটওয়্যার ব্যবহারের ফলে কোনো ডেটা ক্ষতি বা ক্ষতির জন্য লেখক দায়ী নন।"},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -216,6 +224,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_cn_tw() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "歡迎貢獻翻譯！WeChat: forever870422"},
         {StrKey::DISCLAIMER, "免責聲明：作者不對使用本軟體造成的任何資料遺失或損壞承擔責任。"},
+        {StrKey::PART_ENC, "7. 加密分割區"},
+        {StrKey::PART_DEC, "8. 解密分割區"},
     };
 }
 
@@ -256,6 +266,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_cs() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -296,6 +308,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_da() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -336,6 +350,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_de() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Haftungsausschluss: Der Autor übernimmt keine Verantwortung für Datenverluste oder Schäden durch diese Software."},
+        {StrKey::PART_ENC, "7. Partition verschlusseln"},
+        {StrKey::PART_DEC, "8. Partition entschlusseln"},
     };
 }
 
@@ -376,6 +392,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_el() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -416,6 +434,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_en() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -456,6 +476,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_es() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Descargo: El autor no se responsabiliza por pérdida de datos o daños causados por este software."},
+        {StrKey::PART_ENC, "7. Cifrar particion"},
+        {StrKey::PART_DEC, "8. Descifrar particion"},
     };
 }
 
@@ -496,6 +518,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_fa() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -536,6 +560,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_fi() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -576,6 +602,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_fil() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -616,6 +644,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_fr() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Avertissement: L'auteur n'est pas responsable des pertes de données ou dommages causés par ce logiciel."},
+        {StrKey::PART_ENC, "7. Chiffrer partition"},
+        {StrKey::PART_DEC, "8. Dechiffrer partition"},
     };
 }
 
@@ -656,6 +686,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_gu() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -696,6 +728,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_he() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -736,6 +770,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_hi() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "अस्वीकरण: लेखक इस सॉफ़्टवेयर के उपयोग से होने वाली किसी भी डेटा हानि या क्षति के लिए जिम्मेदार नहीं है।"},
+        {StrKey::PART_ENC, "7. पार्टीशन एन्क्रिप्ट करें"},
+        {StrKey::PART_DEC, "8. पार्टीशन डिक्रिप्ट करें"},
     };
 }
 
@@ -776,6 +812,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_hr() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -816,6 +854,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_hu() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -856,6 +896,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_id() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -896,6 +938,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_it() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: L'autore non è responsabile per perdite di dati o danni causati da questo software."},
+        {StrKey::PART_ENC, "7. Cifra partizione"},
+        {StrKey::PART_DEC, "8. Decifra partizione"},
     };
 }
 
@@ -936,6 +980,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_ja() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "免責事項：作者はこのソフトウェアの使用によるいかなるデータ損失や損害についても責任を負いません。"},
+        {StrKey::PART_ENC, "7. パーティション暗号化"},
+        {StrKey::PART_DEC, "8. パーティション復号"},
     };
 }
 
@@ -976,6 +1022,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_km() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -1016,6 +1064,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_kn() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -1056,6 +1106,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_ko() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "면책 조항: 작성자는 이 소프트웨어 사용으로 인한 데이터 손실이나 손해에 대해 책임을 지지 않습니다."},
+        {StrKey::PART_ENC, "7. 파티션 암호화"},
+        {StrKey::PART_DEC, "8. 파티션 복호화"},
     };
 }
 
@@ -1096,6 +1148,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_lo() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -1136,6 +1190,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_mr() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -1176,6 +1232,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_ms() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -1216,6 +1274,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_my() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -1256,6 +1316,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_ne() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -1296,6 +1358,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_nl() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -1336,6 +1400,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_no() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -1376,6 +1442,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_pa() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -1416,6 +1484,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_pl() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -1456,6 +1526,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_pt() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Aviso: O autor não se responsabiliza por perda de dados ou danos causados por este software."},
+        {StrKey::PART_ENC, "7. Criptografar particao"},
+        {StrKey::PART_DEC, "8. Descriptografar particao"},
     };
 }
 
@@ -1496,6 +1568,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_ro() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -1536,6 +1610,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_ru() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Отказ от ответственности: Автор не несет ответственности за потерю данных или ущерб от использования ПО."},
+        {StrKey::PART_ENC, "7. Зашифровать раздел"},
+        {StrKey::PART_DEC, "8. Расшифровать раздел"},
     };
 }
 
@@ -1576,6 +1652,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_si() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -1616,6 +1694,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_sr() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -1656,6 +1736,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_sv() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -1696,6 +1778,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_sw() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -1736,6 +1820,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_ta() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -1776,6 +1862,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_te() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -1816,6 +1904,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_th() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -1856,6 +1946,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_tr() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -1896,6 +1988,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_uk() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -1936,6 +2030,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_ur() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -1976,6 +2072,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_vi() {
         {StrKey::CONTACT_INFO, "WeChat: forever870422  Email: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "Welcome! WeChat: forever870422"},
         {StrKey::DISCLAIMER, "Disclaimer: The author is not responsible for any data loss or damage caused by this software."},
+        {StrKey::PART_ENC, "7. Encrypt Partition"},
+        {StrKey::PART_DEC, "8. Decrypt Partition"},
     };
 }
 
@@ -2016,6 +2114,8 @@ static std::unordered_map<StrKey, std::string> Make_lang_zh_CN() {
         {StrKey::CONTACT_INFO, "微信: forever870422  邮箱: 810372789@qq.com"},
         {StrKey::WELCOME_CONTRIB, "欢迎贡献翻译！微信: forever870422"},
         {StrKey::DISCLAIMER, "免责声明：作者不对使用本软件造成的任何数据丢失或损坏承担责任。"},
+        {StrKey::PART_ENC, "7. 加密分区"},
+        {StrKey::PART_DEC, "8. 解密分区"},
     };
 }
 
