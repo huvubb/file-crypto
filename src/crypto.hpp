@@ -22,6 +22,8 @@ public:
                            const std::string& outputPath,
                            const std::string& apiKey,
                            std::string& errorMsg);
+    static bool SaveKeyFile(const std::string& keyPath, const std::string& apiKey);
+    static bool LoadKeyFile(const std::string& keyPath, std::string& apiKeyOut);
 };
 
 #endif

@@ -177,11 +177,10 @@ static void DoApiEncrypt() {
     std::string out = MakeEncPath(in);
     std::string apiKey, err;
     if (FileCrypto::GenerateKeyEncrypt(in, out, apiKey, err)) {
+        std::string keyPath = out + ".key";
+        FileCrypto::SaveKeyFile(keyPath, apiKey);
         std::cout << "\n" << I18n::Get(StrKey::ENC_SUCCESS) << " -> " << out << "\n";
-        std::cout << "\n========== " << I18n::Get(StrKey::KEYFILE_SAVED) << " ==========\n";
-        std::cout << apiKey << "\n";
-        std::cout << "========================================\n";
-        std::cout << I18n::Get(StrKey::WELCOME_CONTRIB) << "\n";
+        std::cout << "Key saved -> " << keyPath << "\n";
     } else {
         std::cout << "\n" << I18n::Get(StrKey::ENC_FAILED) << err << " [" << in << "]" << "\n";
     }
@@ -217,7 +216,10 @@ static void DoApiDecrypt() {
     in = TrimPath(in);
     in = TrimPath(in);
     std::string out = MakeDecPath(in);
-    std::cout << I18n::Get(StrKey::KEY_FILE_PATH); apiKey = ReadLineUtf8();
+    std::string keyPath = in + ".key";
+    if (!FileCrypto::LoadKeyFile(keyPath, apiKey)) {
+        std::cout << I18n::Get(StrKey::KEY_FILE_PATH); apiKey = ReadLineUtf8();
+    }
     std::string err;
     if (FileCrypto::KeyDecrypt(in, out, apiKey, err))
         std::cout << "\n" << I18n::Get(StrKey::DEC_SUCCESS) << " -> " << out << "\n";
@@ -234,7 +236,8 @@ int main() {
 
     while (true) {
         ClearScreen();
-        std::cout << I18n::Get(StrKey::TITLE) << "\n\n";
+        std::cout << I18n::Get(StrKey::TITLE) << " v1.2\n";
+        std::cout << I18n::Get(StrKey::DISCLAIMER) << "\n\n";
         std::cout << "  " << I18n::Get(StrKey::ENCRYPT) << "\n";
         std::cout << "  " << I18n::Get(StrKey::ENC_KEYFILE) << "\n";
         std::cout << "  " << I18n::Get(StrKey::DECRYPT) << "\n";

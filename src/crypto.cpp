@@ -1,25 +1,45 @@
 #include "crypto.hpp"
 #include <windows.h>
 #include <bcrypt.h>
+#pragma comment(lib, "bcrypt.lib")
+
 #ifdef EncryptFile
 #undef EncryptFile
 #endif
 #ifdef DecryptFile
 #undef DecryptFile
 #endif
+
 #include <iostream>
 #include <vector>
 #include <cstring>
 #include <fstream>
 #include <filesystem>
 
-#pragma comment(lib, "bcrypt.lib")
-
+// --- Constants ---
 static constexpr const char* KEY_PREFIX = "fck-v2-";
 static constexpr int MASTER_KEY_SIZE = 64;
 static constexpr int AES_BLOCK = 16;
+static constexpr int SHA256_LEN = 32;
+static constexpr size_t HDR_PW = 80;   // salt+iv+sha256+reserved+magic
+static constexpr size_t HDR_KEY = 64;  // iv+sha256+reserved+magic
+static constexpr size_t HDR_OLD = 48;
 
-// --- Base64 ---
+// --- RAII secure wipe ---
+template<typename T>
+static void SecureWipe(T& container) {
+    if (!container.empty()) {
+        SecureZeroMemory(container.data(), container.size());
+    }
+}
+
+static void SecureWipeStr(std::string& s) {
+    if (!s.empty()) {
+        SecureZeroMemory(&s[0], s.size());
+    }
+}
+
+// --- Base64 (unchanged) ---
 static const char B64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 static std::string Base64Encode(const uint8_t* d, size_t n) {
     std::string r; r.reserve(((n+2)/3)*4);
@@ -62,7 +82,19 @@ static BCRYPT_KEY_HANDLE CreateAesKey(BCRYPT_ALG_HANDLE alg, const uint8_t* key,
     return hk;
 }
 
-// AES-256-CBC encrypt
+// --- SHA-256 ---
+static void ComputeSha256(const uint8_t* data, size_t len, uint8_t* hash) {
+    BCRYPT_ALG_HANDLE hAlg;
+    BCryptOpenAlgorithmProvider(&hAlg, BCRYPT_SHA256_ALGORITHM, NULL, 0);
+    BCRYPT_HASH_HANDLE hHash;
+    BCryptCreateHash(hAlg, &hHash, NULL, 0, NULL, 0, 0);
+    BCryptHashData(hHash, (PUCHAR)data, (ULONG)len, 0);
+    BCryptFinishHash(hHash, hash, SHA256_LEN, 0);
+    BCryptDestroyHash(hHash);
+    BCryptCloseAlgorithmProvider(hAlg, 0);
+}
+
+// --- AES-256-CBC encrypt (IV-safe) ---
 static bool AesCbcEncrypt(const uint8_t* key, const uint8_t* iv, const uint8_t* in, size_t inLen, std::vector<uint8_t>& out) {
     uint8_t ivCopy[AES_BLOCK];
     memcpy(ivCopy, iv, AES_BLOCK);
@@ -75,10 +107,11 @@ static bool AesCbcEncrypt(const uint8_t* key, const uint8_t* iv, const uint8_t* 
     BCryptEncrypt(hk, (PUCHAR)in, (ULONG)inLen, NULL, (PUCHAR)ivCopy, AES_BLOCK, out.data(), outLen, &outLen, 0);
     BCryptDestroyKey(hk);
     BCryptCloseAlgorithmProvider(alg, 0);
+    SecureZeroMemory(ivCopy, AES_BLOCK);
     return true;
 }
 
-// AES-256-CBC decrypt
+// --- AES-256-CBC decrypt (IV-safe) ---
 static bool AesCbcDecrypt(const uint8_t* key, const uint8_t* iv, const uint8_t* in, size_t inLen, std::vector<uint8_t>& out) {
     uint8_t ivCopy[AES_BLOCK];
     memcpy(ivCopy, iv, AES_BLOCK);
@@ -91,10 +124,11 @@ static bool AesCbcDecrypt(const uint8_t* key, const uint8_t* iv, const uint8_t* 
     BCryptDecrypt(hk, (PUCHAR)in, (ULONG)inLen, NULL, (PUCHAR)ivCopy, AES_BLOCK, out.data(), outLen, &outLen, 0);
     BCryptDestroyKey(hk);
     BCryptCloseAlgorithmProvider(alg, 0);
+    SecureZeroMemory(ivCopy, AES_BLOCK);
     return true;
 }
 
-// --- File read/write with Unicode path ---
+// --- File path ---
 static std::filesystem::path ToWidePath(const std::string& utf8) {
     if(utf8.empty())return std::filesystem::path();
     int len=MultiByteToWideChar(CP_UTF8,0,utf8.c_str(),-1,NULL,0);
@@ -105,7 +139,7 @@ static std::filesystem::path ToWidePath(const std::string& utf8) {
     return std::filesystem::path(ws);
 }
 
-// --- PBKDF2-style key derivation ---
+// --- PBKDF2-style key derivation (SHA-256, 200k rounds) ---
 static void DeriveKey(const std::string& password, const uint8_t* salt, size_t saltLen, uint8_t* out, size_t outLen) {
     std::vector<uint8_t> data(saltLen + password.size());
     memcpy(data.data(), salt, saltLen);
@@ -130,9 +164,12 @@ static void DeriveKey(const std::string& password, const uint8_t* salt, size_t s
     }
     BCryptCloseAlgorithmProvider(hSha, 0);
     memcpy(out, hash.data(), outLen < 32 ? outLen : 32);
+
+    SecureWipe(data);
+    SecureWipe(hash);
 }
 
-// ==== Public API ====
+// ==================== Public API ====================
 
 bool FileCrypto::EncryptFile(const std::string& inputPath,
                               const std::string& outputPath,
@@ -145,6 +182,10 @@ bool FileCrypto::EncryptFile(const std::string& inputPath,
         if(fs<=0){errorMsg="Empty file";return false;}
         std::vector<uint8_t> buf((size_t)fs);
         in.read((char*)buf.data(),fs);in.close();
+
+        // SHA-256 of original plaintext
+        uint8_t origHash[SHA256_LEN];
+        ComputeSha256(buf.data(), (size_t)fs, origHash);
 
         uint8_t salt[16],iv[AES_BLOCK];
         RandBytes(salt,16);RandBytes(iv,AES_BLOCK);
@@ -160,11 +201,18 @@ bool FileCrypto::EncryptFile(const std::string& inputPath,
         std::vector<uint8_t> out;
         AesCbcEncrypt(key,iv,buf.data(),padLen,out);
 
+        SecureWipe(buf);
+        SecureZeroMemory(key,32);
+
         std::ofstream of(ToWidePath(outputPath),std::ios::binary);
         if(!of){errorMsg="Cannot create output";return false;}
-        uint8_t hdr[48];
-        memcpy(hdr,salt,16);memcpy(hdr+16,iv,AES_BLOCK);memcpy(hdr+32,"CRYPT01",7);
-        of.write((char*)hdr,48);
+        // Header: salt[16] + iv[16] + sha256[32] + reserved[9] + "CRYPT03"[7]
+        uint8_t hdr[HDR_PW]={};
+        memcpy(hdr,salt,16);
+        memcpy(hdr+16,iv,AES_BLOCK);
+        memcpy(hdr+32,origHash,SHA256_LEN);
+        memcpy(hdr+64+9,"CRYPT03",7);
+        of.write((char*)hdr,HDR_PW);
         of.write((char*)out.data(),out.size());
         of.close();
         return true;
@@ -180,15 +228,38 @@ bool FileCrypto::DecryptFile(const std::string& inputPath,
         std::ifstream in(ToWidePath(inputPath),std::ios::binary|std::ios::ate);
         if(!in){errorMsg="Cannot open input";return false;}
         std::streamsize fs=in.tellg();
-        if(fs<48){errorMsg="Invalid file";return false;}
         in.seekg(0);
-        uint8_t hdr[48];in.read((char*)hdr,48);
-        if(memcmp(hdr+32,"CRYPT01",7)){errorMsg="Not encrypted";return false;}
-        uint8_t salt[16],iv[AES_BLOCK];
-        memcpy(salt,hdr,16);memcpy(iv,hdr+16,AES_BLOCK);
 
-        size_t clen=(size_t)(fs-48);
+        // Detect format by reading first bytes
+        if(fs<HDR_OLD){errorMsg="File too small";return false;}
+
+        uint8_t peek[80]={};
+        size_t peekLen = (size_t)fs > 80 ? 80 : (size_t)fs;
+        in.read((char*)peek, peekLen);
+
+        bool isNew = (memcmp(peek+64+9,"CRYPT03",7)==0);
+        bool isOld = (memcmp(peek+32,"CRYPT01",7)==0);
+
+        if(!isNew && !isOld){errorMsg="Not a valid encrypted file";return false;}
+
+        size_t hdrSize = isNew ? HDR_PW : HDR_OLD;
+        if(fs < (std::streamsize)hdrSize){errorMsg="Invalid file";return false;}
+
+        uint8_t salt[16],iv[AES_BLOCK];
+        uint8_t storedHash[SHA256_LEN]={};
+
+        if(isNew){
+            memcpy(salt,peek,16);
+            memcpy(iv,peek+16,AES_BLOCK);
+            memcpy(storedHash,peek+32,SHA256_LEN);
+        } else {
+            memcpy(salt,peek,16);
+            memcpy(iv,peek+16,AES_BLOCK);
+        }
+
+        size_t clen=(size_t)(fs-hdrSize);
         std::vector<uint8_t> ct(clen);
+        in.seekg(hdrSize);
         in.read((char*)ct.data(),clen);in.close();
 
         uint8_t key[32];
@@ -197,14 +268,43 @@ bool FileCrypto::DecryptFile(const std::string& inputPath,
         std::vector<uint8_t> pt;
         AesCbcDecrypt(key,iv,ct.data(),clen,pt);
 
-        uint8_t pv=pt.back();
-        if(pv==0||pv>AES_BLOCK){errorMsg="Wrong password";return false;}
-        for(int i=0;i<pv;++i)if(pt[pt.size()-1-i]!=pv){errorMsg="Wrong password";return false;}
-        size_t ol=pt.size()-pv;
+        SecureZeroMemory(key,32);
 
-        std::ofstream of(ToWidePath(outputPath),std::ios::binary);
-        if(!of){errorMsg="Cannot create output";return false;}
-        of.write((char*)pt.data(),ol);of.close();
+        if(isNew){
+            // SHA-256 verification
+            uint8_t computedHash[SHA256_LEN];
+            ComputeSha256(pt.data(), pt.size(), computedHash);
+            // Compare hash of the FULL padded plaintext
+            // Actually we need to compare after removing padding.
+            // Let's remove PKCS7 first, then hash
+            uint8_t pv=pt.back();
+            if(pv==0||pv>AES_BLOCK){errorMsg="Decryption failed - wrong password or corrupted file";SecureWipe(pt);return false;}
+            for(int i=0;i<pv;++i)if(pt[pt.size()-1-i]!=pv){errorMsg="Decryption failed - wrong password or corrupted file";SecureWipe(pt);return false;}
+            size_t ol=pt.size()-pv;
+
+            ComputeSha256(pt.data(), ol, computedHash);
+            if(memcmp(storedHash,computedHash,SHA256_LEN)!=0){
+                SecureWipe(pt);
+                errorMsg="Integrity check failed - wrong password or corrupted file";
+                return false;
+            }
+
+            std::ofstream of(ToWidePath(outputPath),std::ios::binary);
+            if(!of){errorMsg="Cannot create output";return false;}
+            of.write((char*)pt.data(),ol);of.close();
+            SecureWipe(pt);
+        } else {
+            // Old format: PKCS7 check
+            uint8_t pv=pt.back();
+            if(pv==0||pv>AES_BLOCK){errorMsg="Wrong password";SecureWipe(pt);return false;}
+            for(int i=0;i<pv;++i)if(pt[pt.size()-1-i]!=pv){errorMsg="Wrong password";SecureWipe(pt);return false;}
+            size_t ol=pt.size()-pv;
+
+            std::ofstream of(ToWidePath(outputPath),std::ios::binary);
+            if(!of){errorMsg="Cannot create output";return false;}
+            of.write((char*)pt.data(),ol);of.close();
+            SecureWipe(pt);
+        }
         return true;
     }catch(const std::exception& e){errorMsg=e.what();return false;}
     catch(...){errorMsg="Unknown error";return false;}
@@ -222,6 +322,10 @@ bool FileCrypto::GenerateKeyEncrypt(const std::string& inputPath,
         std::vector<uint8_t> buf((size_t)fs);
         in.read((char*)buf.data(),fs);in.close();
 
+        // SHA-256 of original plaintext
+        uint8_t origHash[SHA256_LEN];
+        ComputeSha256(buf.data(), (size_t)fs, origHash);
+
         uint8_t masterKey[MASTER_KEY_SIZE],iv[AES_BLOCK];
         RandBytes(masterKey,MASTER_KEY_SIZE);RandBytes(iv,AES_BLOCK);
 
@@ -233,6 +337,8 @@ bool FileCrypto::GenerateKeyEncrypt(const std::string& inputPath,
         std::vector<uint8_t> out;
         AesCbcEncrypt(masterKey,iv,buf.data(),padLen,out);
 
+        SecureWipe(buf);
+
         std::string actual=outputPath;
         bool he=false;
         for(const char* e:{".enc",".bin",".crypt"}){
@@ -243,13 +349,17 @@ bool FileCrypto::GenerateKeyEncrypt(const std::string& inputPath,
 
         std::ofstream of(ToWidePath(actual),std::ios::binary);
         if(!of){errorMsg="Cannot create output";return false;}
-        uint8_t hdr[48]={};
-        memcpy(hdr,iv,AES_BLOCK);memcpy(hdr+32,"CRYPT02",7);
-        of.write((char*)hdr,48);
+        // Header: iv[16] + sha256[32] + reserved[9] + "CRYPT04"[7]
+        uint8_t hdr[HDR_KEY]={};
+        memcpy(hdr,iv,AES_BLOCK);
+        memcpy(hdr+16,origHash,SHA256_LEN);
+        memcpy(hdr+48+9,"CRYPT04",7);
+        of.write((char*)hdr,HDR_KEY);
         of.write((char*)out.data(),out.size());
         of.close();
 
         apiKeyOut=KEY_PREFIX+Base64Encode(masterKey,MASTER_KEY_SIZE);
+        SecureZeroMemory(masterKey,MASTER_KEY_SIZE);
         return true;
     }catch(const std::exception& e){errorMsg=e.what();return false;}
     catch(...){errorMsg="Unknown error";return false;}
@@ -267,28 +377,92 @@ bool FileCrypto::KeyDecrypt(const std::string& inputPath,
         std::ifstream in(ToWidePath(inputPath),std::ios::binary|std::ios::ate);
         if(!in){errorMsg="Cannot open file";return false;}
         std::streamsize fs=in.tellg();
-        if(fs<48){errorMsg="Invalid file";return false;}
         in.seekg(0);
-        uint8_t hdr[48];in.read((char*)hdr,48);
-        if(memcmp(hdr+32,"CRYPT02",7)){errorMsg="Not API-key encrypted";return false;}
-        uint8_t iv[AES_BLOCK];memcpy(iv,hdr,AES_BLOCK);
 
-        size_t clen=(size_t)(fs-48);
+        uint8_t peek[80]={};
+        size_t peekLen = (size_t)fs > 80 ? 80 : (size_t)fs;
+        in.read((char*)peek, peekLen);
+
+        bool isNew = (memcmp(peek+48+9,"CRYPT04",7)==0);
+        bool isOld = (memcmp(peek+32,"CRYPT02",7)==0);
+
+        if(!isNew && !isOld){errorMsg="Not a valid API-key encrypted file";return false;}
+
+        size_t hdrSize = isNew ? HDR_KEY : HDR_OLD;
+        if(fs < (std::streamsize)hdrSize){errorMsg="Invalid file";return false;}
+
+        uint8_t iv[AES_BLOCK];
+        uint8_t storedHash[SHA256_LEN]={};
+
+        if(isNew){
+            memcpy(iv,peek,AES_BLOCK);
+            memcpy(storedHash,peek+16,SHA256_LEN);
+        } else {
+            memcpy(iv,peek,AES_BLOCK);
+        }
+
+        size_t clen=(size_t)(fs-hdrSize);
         std::vector<uint8_t> ct(clen);
+        in.seekg(hdrSize);
         in.read((char*)ct.data(),clen);in.close();
 
         std::vector<uint8_t> pt;
         AesCbcDecrypt(kb.data(),iv,ct.data(),clen,pt);
 
-        uint8_t pv=pt.back();
-        if(pv==0||pv>AES_BLOCK){errorMsg="Wrong API key";return false;}
-        for(int i=0;i<pv;++i)if(pt[pt.size()-1-i]!=pv){errorMsg="Wrong API key";return false;}
-        size_t ol=pt.size()-pv;
+        SecureWipe(kb);
 
-        std::ofstream of(ToWidePath(outputPath),std::ios::binary);
-        if(!of){errorMsg="Cannot create output";return false;}
-        of.write((char*)pt.data(),ol);of.close();
+        if(isNew){
+            uint8_t pv=pt.back();
+            if(pv==0||pv>AES_BLOCK){errorMsg="Decryption failed - wrong key";SecureWipe(pt);return false;}
+            for(int i=0;i<pv;++i)if(pt[pt.size()-1-i]!=pv){errorMsg="Decryption failed - wrong key";SecureWipe(pt);return false;}
+            size_t ol=pt.size()-pv;
+
+            uint8_t computedHash[SHA256_LEN];
+            ComputeSha256(pt.data(), ol, computedHash);
+            if(memcmp(storedHash,computedHash,SHA256_LEN)!=0){
+                SecureWipe(pt);
+                errorMsg="Integrity check failed - wrong key or corrupted file";
+                return false;
+            }
+
+            std::ofstream of(ToWidePath(outputPath),std::ios::binary);
+            if(!of){errorMsg="Cannot create output";return false;}
+            of.write((char*)pt.data(),ol);of.close();
+            SecureWipe(pt);
+        } else {
+            uint8_t pv=pt.back();
+            if(pv==0||pv>AES_BLOCK){errorMsg="Wrong API key";SecureWipe(pt);return false;}
+            for(int i=0;i<pv;++i)if(pt[pt.size()-1-i]!=pv){errorMsg="Wrong API key";SecureWipe(pt);return false;}
+            size_t ol=pt.size()-pv;
+
+            std::ofstream of(ToWidePath(outputPath),std::ios::binary);
+            if(!of){errorMsg="Cannot create output";return false;}
+            of.write((char*)pt.data(),ol);of.close();
+            SecureWipe(pt);
+        }
         return true;
     }catch(const std::exception& e){errorMsg=e.what();return false;}
     catch(...){errorMsg="Unknown error";return false;}
+}
+
+bool FileCrypto::SaveKeyFile(const std::string& keyPath, const std::string& apiKey) {
+    std::ofstream of(ToWidePath(keyPath), std::ios::binary);
+    if(!of) return false;
+    of.write(apiKey.data(), apiKey.size());
+    of.close();
+    return true;
+}
+
+bool FileCrypto::LoadKeyFile(const std::string& keyPath, std::string& apiKeyOut) {
+    std::ifstream in(ToWidePath(keyPath), std::ios::binary|std::ios::ate);
+    if(!in) return false;
+    std::streamsize sz = in.tellg();
+    if(sz <= 0 || sz > 1024) return false;
+    in.seekg(0);
+    apiKeyOut.resize((size_t)sz);
+    in.read(&apiKeyOut[0], sz);
+    in.close();
+    while(!apiKeyOut.empty() && (apiKeyOut.back()=='\r'||apiKeyOut.back()=='\n'))
+        apiKeyOut.pop_back();
+    return true;
 }
