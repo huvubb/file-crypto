@@ -53,6 +53,24 @@ public:
                                  size_t maxBytes,
                                  std::string& keyPathOut,
                                  std::string& errorMsg);
+    static bool EncryptVolumeApi(const std::string& volume,
+                                  std::string& keyPathOut,
+                                  std::string& apiKeyOut,
+                                  std::string& errorMsg,
+                                  void (*progressCb)(const std::string&, size_t, size_t)=nullptr);
+    static bool DecryptVolumeApi(const std::string& volume,
+                                  const std::string& apiKey,
+                                  std::string& errorMsg,
+                                  void (*progressCb)(const std::string&, size_t, size_t)=nullptr);
+    static bool EncryptDiskApi(int diskNum,
+                                std::string& keyPathOut,
+                                std::string& apiKeyOut,
+                                std::string& errorMsg,
+                                void (*progressCb)(const std::string&, size_t, size_t)=nullptr);
+    static bool DecryptDiskApi(int diskNum,
+                                const std::string& apiKey,
+                                std::string& errorMsg,
+                                void (*progressCb)(const std::string&, size_t, size_t)=nullptr);
     static bool EncryptDisk(int diskNum,
                             const std::string& password,
                             std::string& keyPathOut,

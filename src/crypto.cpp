@@ -923,3 +923,101 @@ bool FileCrypto::DecryptDisk(int diskNum, const std::string& password, std::stri
     SecureZeroMemory(key, 32); CloseHandle(h);
     return true;
 }
+
+// ==== API KEY DISK OPERATIONS ====
+
+bool FileCrypto::EncryptVolumeApi(const std::string& volume, std::string& keyPathOut, std::string& apiKeyOut, std::string& errorMsg, void (*progressCb)(const std::string&, size_t, size_t)) {
+    try {
+        g_abortEncrypt = false;
+        if (!VerifySystemIntegrity()) { errorMsg = "System integrity check failed"; return false; }
+        if (IsSystemDrive(volume)) { errorMsg = "Cannot encrypt system drive!"; return false; }
+        uint64_t vsz = GetVolumeSize(volume);
+        if (vsz == 0) { errorMsg = "Volume inaccessible"; return false; }
+        HANDLE h = OpenVolumeLocked(volume, errorMsg);
+        if (h == INVALID_HANDLE_VALUE) return false;
+        uint8_t mk[64], iv[AES_BLOCK]; RandBytes(mk,64); RandBytes(iv,AES_BLOCK);
+        apiKeyOut = std::string(KEY_PREFIX) + Base64Encode(mk, 64);
+        keyPathOut = "D:\\" + std::string(1, (char)tolower((unsigned char)volume[0])) + "_api_recovery.key";
+        SaveKeyFile(keyPathOut, apiKeyOut);
+        std::vector<uint8_t> hdr(VOL_HDR, 0);
+        memcpy(hdr.data(), iv, AES_BLOCK); memcpy(hdr.data()+32, "CRYPTAPI", 8);
+        DWORD w; SetFilePointer(h, 0, NULL, FILE_BEGIN); WriteFile(h, hdr.data(), VOL_HDR, &w, NULL);
+        uint64_t off = VOL_HDR, rem = vsz - VOL_HDR, total = rem;
+        constexpr size_t BS = 1048576; std::vector<uint8_t> buf(BS), encBuf;
+        while (rem > 0) {
+            if (g_abortEncrypt) { CloseHandle(h); errorMsg="Aborted"; return false; }
+            size_t ch = (size_t)(rem > BS ? BS : rem); DWORD red;
+            LARGE_INTEGER li; li.QuadPart = off; SetFilePointerEx(h, li, NULL, FILE_BEGIN);
+            if (!ReadFile(h, buf.data(), (DWORD)ch, &red, NULL) || red == 0) break;
+            if (red < ch) ch = red;
+            size_t pc = ((ch/AES_BLOCK)+1)*AES_BLOCK;
+            std::vector<uint8_t> pad(pc); memcpy(pad.data(), buf.data(), ch);
+            uint8_t pv = (uint8_t)(AES_BLOCK-(ch%AES_BLOCK)); if (ch%AES_BLOCK==0) pv=AES_BLOCK;
+            for (size_t j=ch;j<pc;++j) pad[j]=pv;
+            uint8_t siv[AES_BLOCK]; ComputeSha256((uint8_t*)&off, sizeof(off), siv);
+            for (int j=0;j<AES_BLOCK;++j) siv[j]^=iv[j];
+            AesCbcEncrypt(mk, siv, pad.data(), pc, encBuf);
+            SetFilePointerEx(h, li, NULL, FILE_BEGIN);
+            WriteFile(h, encBuf.data(), (DWORD)encBuf.size(), &w, NULL);
+            off += ch; rem -= ch;
+            if (progressCb) progressCb("Encrypting", (size_t)(total - rem), (size_t)total);
+            if (g_abortEncrypt) { CloseHandle(h); errorMsg="Aborted"; return false; }
+            SecureWipe(buf); SecureWipe(pad); SecureWipe(encBuf);
+        }
+        SecureZeroMemory(mk, 64); CloseHandle(h);
+        return true;
+    } catch(const std::exception& e){errorMsg=e.what();return false;}
+    catch(...){errorMsg="Unknown error";return false;}
+}
+
+bool FileCrypto::DecryptVolumeApi(const std::string& volume, const std::string& apiKey, std::string& errorMsg, void (*progressCb)(const std::string&, size_t, size_t)) {
+    try {
+        g_abortEncrypt = false;
+        if (apiKey.compare(0, strlen(KEY_PREFIX), KEY_PREFIX)) { errorMsg="Invalid API key"; return false; }
+        auto kb = Base64Decode(apiKey.substr(strlen(KEY_PREFIX)));
+        if (kb.size() != 64) { errorMsg="Wrong key length"; return false; }
+        uint64_t vsz = GetVolumeSize(volume);
+        if (vsz == 0) { errorMsg="Volume inaccessible"; return false; }
+        HANDLE h = OpenVolumeLocked(volume, errorMsg);
+        if (h == INVALID_HANDLE_VALUE) return false;
+        std::vector<uint8_t> hdr(VOL_HDR); DWORD red;
+        SetFilePointer(h, 0, NULL, FILE_BEGIN);
+        if (!ReadFile(h, hdr.data(), VOL_HDR, &red, NULL) || red < VOL_HDR) { CloseHandle(h); errorMsg="Bad header"; return false; }
+        if (memcmp(hdr.data()+32, "CRYPTAPI", 8)) { CloseHandle(h); errorMsg="Not API-key encrypted"; return false; }
+        uint8_t iv[AES_BLOCK]; memcpy(iv, hdr.data(), AES_BLOCK);
+        uint64_t off = VOL_HDR, rem = vsz - VOL_HDR, total = rem;
+        constexpr size_t BS = 1048576; std::vector<uint8_t> buf(BS), decBuf;
+        while (rem > 0) {
+            if (g_abortEncrypt) { CloseHandle(h); errorMsg="Aborted"; return false; }
+            size_t ch = (size_t)(rem > BS ? BS : rem);
+            LARGE_INTEGER li; li.QuadPart = off; SetFilePointerEx(h, li, NULL, FILE_BEGIN);
+            if (!ReadFile(h, buf.data(), (DWORD)ch, &red, NULL) || red == 0) break;
+            if (red < ch) ch = red;
+            uint8_t siv[AES_BLOCK]; ComputeSha256((uint8_t*)&off, sizeof(off), siv);
+            for (int j=0;j<AES_BLOCK;++j) siv[j]^=iv[j];
+            AesCbcDecrypt(kb.data(), siv, buf.data(), ch, decBuf);
+            uint8_t pv = decBuf.back(); size_t ol = ch;
+            if (pv > 0 && pv <= AES_BLOCK) ol = decBuf.size() - pv;
+            DWORD w; SetFilePointerEx(h, li, NULL, FILE_BEGIN);
+            WriteFile(h, decBuf.data(), (DWORD)ol, &w, NULL);
+            off += ch; rem -= ch;
+            if (progressCb) progressCb("Decrypting", (size_t)(total - rem), (size_t)total);
+            if (g_abortEncrypt) { CloseHandle(h); errorMsg="Aborted"; return false; }
+            SecureWipe(buf); SecureWipe(decBuf);
+        }
+        SecureWipe(kb); CloseHandle(h);
+        return true;
+    } catch(const std::exception& e){errorMsg=e.what();return false;}
+    catch(...){errorMsg="Unknown error";return false;}
+}
+
+bool FileCrypto::EncryptDiskApi(int diskNum, std::string& keyPathOut, std::string& apiKeyOut, std::string& errorMsg, void (*progressCb)(const std::string&, size_t, size_t)) {
+    if (IsDiskSystemDisk(diskNum)) { errorMsg = "Cannot encrypt system disk!"; return false; }
+    std::string dev = "\\\\.\\PhysicalDrive" + std::to_string(diskNum);
+    return EncryptVolumeApi(dev, keyPathOut, apiKeyOut, errorMsg, progressCb);
+}
+
+bool FileCrypto::DecryptDiskApi(int diskNum, const std::string& apiKey, std::string& errorMsg, void (*progressCb)(const std::string&, size_t, size_t)) {
+    std::string dev = "\\\\.\\PhysicalDrive" + std::to_string(diskNum);
+    return DecryptVolumeApi(dev, apiKey, errorMsg, progressCb);
+}
