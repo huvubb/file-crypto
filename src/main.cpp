@@ -1,6 +1,7 @@
 #include "i18n.hpp"
 #include "config.hpp"
 #include "crypto.hpp"
+#include <cstdio>
 #include <iostream>
 #include <string>
 #include <limits>
@@ -16,15 +17,52 @@
 #endif
 
 
+static std::string FormatSize(size_t bytes) {
+    const char* units[] = {"B", "KB", "MB", "GB", "TB"};
+    int u = 0;
+    double s = (double)bytes;
+    while (s >= 1024.0 && u < 4) { s /= 1024.0; u++; }
+    char buf[64];
+    if (u == 0) snprintf(buf, sizeof(buf), "%.0f %s", s, units[u]);
+    else snprintf(buf, sizeof(buf), "%.1f %s", s, units[u]);
+    return std::string(buf);
+}
+
+static void OpLog(const std::string& stage, const std::string& target) {
+    bool cn = (I18n::CurrentCode() == "zh-CN");
+    if (stage == "open") {
+        if (cn) std::cout << "  [LOG] 正在打开 " << target << " ..." << std::endl;
+        else    std::cout << "  [LOG] Opening " << target << " ..." << std::endl;
+    } else if (stage == "hdr") {
+        if (cn) std::cout << "  [LOG] 正在读取加密头..." << std::endl;
+        else    std::cout << "  [LOG] Reading encryption header..." << std::endl;
+    } else if (stage == "enc") {
+        if (cn) std::cout << "  [LOG] 正在加密 " << target << " ..." << std::endl;
+        else    std::cout << "  [LOG] Encrypting " << target << " ..." << std::endl;
+    } else if (stage == "dec") {
+        if (cn) std::cout << "  [LOG] 正在解密 " << target << " ..." << std::endl;
+        else    std::cout << "  [LOG] Decrypting " << target << " ..." << std::endl;
+    } else if (stage == "done") {
+        if (cn) std::cout << "  [LOG] 操作完成" << std::endl;
+        else    std::cout << "  [LOG] Operation complete" << std::endl;
+    } else if (stage == "err") {
+        if (cn) std::cout << "  [LOG] 错误: " << target << std::endl;
+        else    std::cout << "  [LOG] Error: " << target << std::endl;
+    }
+}
+
 static void ShowProgress(const std::string& label, size_t done, size_t total) {
     if (total == 0) return;
     int pct = static_cast<int>(done * 100 / total);
     static int lastPct = -1;
-    if (pct != lastPct && pct % 10 == 0) {
-        lastPct = pct;
-        std::cout << "\r" << label << " " << pct << "%" << std::flush;
-    }
-    if (done >= total) { std::cout << "\r" << label << " 100%\n"; lastPct = -1; }
+    if (pct == lastPct) return;
+    lastPct = pct;
+    const int barW = 30;
+    int filled = barW * pct / 100;
+    std::string bar = "[" + std::string(filled, char(219)) + std::string(barW - filled, char(176)) + "]";
+    std::cout << "\r  " << label << " " << bar << " " << pct << "% ("
+              << FormatSize(done) << "/" << FormatSize(total) << ")    " << std::flush;
+    if (done >= total) { std::cout << "\n"; lastPct = -1; }
 }
 
 static std::string ReadLineUtf8() {
@@ -258,7 +296,7 @@ static void DoVolumeEncrypt() {
         std::string confirm = ReadLineUtf8();
         if (confirm != "YES" && confirm != "yes") { std::cout << I18n::Get(StrKey::PART_CANCELLED) << "\n"; Pause(); return; }
         if (crMode == 1 || crMode == 3) { std::cout << I18n::Get(StrKey::ENTER_PASSWORD); pass = ReadLineUtf8(); }
-        std::cout << "\nEncrypting " << target << "...\n[ESC to abort]\n";
+        std::cout << "\n[LOG] " << target << " - " << I18n::Get(StrKey::PART_ENCRYPTING) << "\n[ESC to abort]\n";
         bool ok; size_t maxB = (crMode == 3) ? 268435456 : 0;
         if (crMode == 2) ok = FileCrypto::EncryptVolumeApi(target, keyPath, apiKey, err, ShowProgress);
         else if (crMode == 3) ok = FileCrypto::EncryptVolumeFast(target, pass, maxB, keyPath, err);
@@ -284,7 +322,7 @@ static void DoVolumeEncrypt() {
         std::string confirm = ReadLineUtf8();
         if (confirm != "YES" && confirm != "yes") { std::cout << I18n::Get(StrKey::PART_CANCELLED) << "\n"; Pause(); return; }
         if (crMode == 1 || crMode == 3) { std::cout << I18n::Get(StrKey::ENTER_PASSWORD); pass = ReadLineUtf8(); }
-        std::cout << "\nEncrypting Disk " << dn << "...\n[ESC to abort]\n";
+        std::cout << "\n[LOG] Disk " << dn << " - " << I18n::Get(StrKey::PART_ENCRYPTING) << "\n[ESC to abort]\n";
         bool ok;
         if (crMode == 2) ok = FileCrypto::EncryptDiskApi(dn, keyPath, apiKey, err, ShowProgress);
         else if (crMode == 3) { std::string dev = "\\\\.\\PhysicalDrive" + std::to_string(dn); ok = FileCrypto::EncryptVolumeFast(dev, pass, 268435456, keyPath, err); }
@@ -321,6 +359,7 @@ static void DoVolumeDecrypt() {
             if (!FileCrypto::LoadKeyFile(kp, apiKey)) { std::cout << I18n::Get(StrKey::KEY_FILE_PATH); apiKey = ReadLineUtf8(); }
         }
         std::cout << "\nDecrypting " << target << "...\n[ESC to abort]\n";
+        OpLog("dec", target);
         bool ok = (crMode == 1) ? FileCrypto::DecryptVolume(target, pass, err, ShowProgress) : FileCrypto::DecryptVolumeApi(target, apiKey, err, ShowProgress);
         if (ok) std::cout << "\n" << I18n::Get(StrKey::PART_DONE) << "\n";
         else std::cout << "\n" << I18n::Get(StrKey::ERROR_PREFIX) << err << "\n";
@@ -340,7 +379,9 @@ static void DoVolumeDecrypt() {
             std::string kp = "D:\\disk" + std::to_string(dn) + "_api_recovery.key";
             if (!FileCrypto::LoadKeyFile(kp, apiKey)) { std::cout << I18n::Get(StrKey::KEY_FILE_PATH); apiKey = ReadLineUtf8(); }
         }
-        std::cout << "\nDecrypting Disk " << dn << "...\n[ESC to abort]\n";
+        std::cout << "\n[LOG] Disk " << dn << " - " << I18n::Get(StrKey::PART_DECRYPTING) << "\n[ESC to abort]\n";
+        std::string diskLabel2 = "Disk " + std::to_string(dn);
+        OpLog("dec", diskLabel2);
         bool ok = (crMode == 1) ? FileCrypto::DecryptDisk(dn, pass, err, ShowProgress) : FileCrypto::DecryptDiskApi(dn, apiKey, err, ShowProgress);
         if (ok) std::cout << "\n" << I18n::Get(StrKey::PART_DONE) << "\n";
         else std::cout << "\n" << I18n::Get(StrKey::ERROR_PREFIX) << err << "\n";
