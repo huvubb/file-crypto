@@ -74,6 +74,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_am() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -132,6 +136,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_ar() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -190,6 +198,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_bg() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -248,6 +260,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_bn() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -306,6 +322,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_cn_tw() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. 快速模式 (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key 模式"},
+        {StrKey::DISK_MODE_PW, "1. 密碼模式"},
+        {StrKey::DISK_SECTION, "--- 磁碟加密 ---"},
     };
 }
 
@@ -364,6 +384,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_cs() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -422,6 +446,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_da() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -480,6 +508,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_de() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -538,6 +570,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_el() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -596,6 +632,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_en() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -654,6 +694,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_es() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -712,6 +756,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_fa() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -770,6 +818,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_fi() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -828,6 +880,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_fil() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -886,6 +942,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_fr() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -944,6 +1004,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_gu() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -1002,6 +1066,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_he() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -1060,6 +1128,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_hi() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -1118,6 +1190,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_hr() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -1176,6 +1252,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_hu() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -1234,6 +1314,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_id() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -1292,6 +1376,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_it() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -1350,6 +1438,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_ja() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -1408,6 +1500,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_km() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -1466,6 +1562,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_kn() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -1524,6 +1624,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_ko() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -1582,6 +1686,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_lo() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -1640,6 +1748,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_mr() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -1698,6 +1810,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_ms() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -1756,6 +1872,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_my() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -1814,6 +1934,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_ne() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -1872,6 +1996,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_nl() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -1930,6 +2058,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_no() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -1988,6 +2120,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_pa() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -2046,6 +2182,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_pl() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -2104,6 +2244,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_pt() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -2162,6 +2306,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_ro() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -2220,6 +2368,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_ru() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -2278,6 +2430,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_si() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -2336,6 +2492,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_sr() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -2394,6 +2554,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_sv() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -2452,6 +2616,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_sw() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -2510,6 +2678,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_ta() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -2568,6 +2740,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_te() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -2626,6 +2802,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_th() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -2684,6 +2864,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_tr() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -2742,6 +2926,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_uk() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -2800,6 +2988,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_ur() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -2858,6 +3050,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_vi() {
         {StrKey::PART_PHYSICAL_MODE, "2. Physical Disk (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. Logical Partition (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! WARNING: This will destroy all data, author not responsible !!!"},
+        {StrKey::DISK_MODE_FAST, "3. Fast Mode (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key Mode"},
+        {StrKey::DISK_MODE_PW, "1. Password Mode"},
+        {StrKey::DISK_SECTION, "--- Disk Encryption ---"},
     };
 }
 
@@ -2916,6 +3112,10 @@ static std::unordered_map<StrKey, std::string> Make_lang_zh_CN() {
         {StrKey::PART_PHYSICAL_MODE, "2. 物理磁盘 (Disk 0, Disk 1, ...)"},
         {StrKey::PART_LOGICAL_MODE, "1. 逻辑分区 (D:, E:, ...)"},
         {StrKey::PART_WARN, "!!! 警告：这将销毁分区上的所有数据，作者不承担任何责任 !!!"},
+        {StrKey::DISK_MODE_FAST, "3. 快速模式 (256MB)"},
+        {StrKey::DISK_MODE_API, "2. API Key 模式"},
+        {StrKey::DISK_MODE_PW, "1. 密码模式"},
+        {StrKey::DISK_SECTION, "--- 磁盘加密 ---"},
     };
 }
 
