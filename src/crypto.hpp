@@ -41,10 +41,18 @@ public:
                               std::string& errorMsg,
                               void (*progressCb)(const std::string&, size_t, size_t)=nullptr);
 
+    // Abort
+    static void Abort();
+
     // Physical disk operations
     static std::vector<int> GetPhysicalDisks();
     static bool IsDiskSystemDisk(int diskNum);
     static uint64_t GetDiskSize(int diskNum);
+    static bool EncryptVolumeFast(const std::string& volume,
+                                 const std::string& password,
+                                 size_t maxBytes,
+                                 std::string& keyPathOut,
+                                 std::string& errorMsg);
     static bool EncryptDisk(int diskNum,
                             const std::string& password,
                             std::string& keyPathOut,

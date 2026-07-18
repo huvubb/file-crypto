@@ -480,6 +480,8 @@ bool FileCrypto::LoadKeyFile(const std::string& keyPath, std::string& apiKeyOut)
 // ==================== Volume Operations ====================
 
 static constexpr const char* VOL_MAGIC = "CRYPTVOL";
+static volatile bool g_abortEncrypt = false;
+void FileCrypto_Abort() { g_abortEncrypt = true; }
 static constexpr size_t VOL_HDR = 8192;  // 8KB volume header
 
 std::vector<std::string> FileCrypto::GetVolumes() {
@@ -804,6 +806,49 @@ uint64_t FileCrypto::GetDiskSize(int diskNum) {
     BOOL ok = DeviceIoControl(h, IOCTL_DISK_GET_LENGTH_INFO, NULL, 0, &gli, sizeof(gli), &bytes, NULL);
     CloseHandle(h);
     return ok ? gli.Length.QuadPart : 0;
+}
+
+// Fast metadata-only encryption (first N bytes)
+bool FileCrypto::EncryptVolumeFast(const std::string& volume, const std::string& password, size_t maxBytes, std::string& keyPathOut, std::string& errorMsg) {
+    try {
+        g_abortEncrypt = false;
+        uint64_t vsz = GetVolumeSize(volume);
+        if (vsz == 0) { errorMsg = "Volume inaccessible"; return false; }
+        HANDLE h = OpenVolumeLocked(volume, errorMsg);
+        if (h == INVALID_HANDLE_VALUE) return false;
+        uint8_t salt[16], iv[AES_BLOCK]; RandBytes(salt,16); RandBytes(iv,AES_BLOCK);
+        uint8_t key[32]; DeriveKey(password, salt, 16, key, 32);
+        std::string apiKey = std::string(KEY_PREFIX) + Base64Encode(key, 32);
+        keyPathOut = "D:\\\\" + std::string(1, (char)tolower((unsigned char)volume[0])) + "_recovery.key";
+        SaveKeyFile(keyPathOut, apiKey);
+        std::vector<uint8_t> hdr(VOL_HDR, 0);
+        memcpy(hdr.data(), salt, 16); memcpy(hdr.data()+16, iv, AES_BLOCK); memcpy(hdr.data()+32, VOL_MAGIC, 8);
+        DWORD written; SetFilePointer(h, 0, NULL, FILE_BEGIN); WriteFile(h, hdr.data(), VOL_HDR, &written, NULL);
+        size_t total = (size_t)(maxBytes < (size_t)(vsz - VOL_HDR) ? maxBytes : (size_t)(vsz - VOL_HDR));
+        size_t rem = total; uint64_t off = VOL_HDR;
+        std::vector<uint8_t> buf(1048576), encBuf;
+        while (rem > 0) {
+            if (g_abortEncrypt) { CloseHandle(h); errorMsg="Aborted"; return false; }
+            size_t ch = rem > 1048576 ? 1048576 : rem; DWORD red;
+            LARGE_INTEGER li; li.QuadPart = off; SetFilePointerEx(h, li, NULL, FILE_BEGIN);
+            if (!ReadFile(h, buf.data(), (DWORD)ch, &red, NULL) || red == 0) break;
+            if (red < ch) ch = red;
+            size_t pc = ((ch/AES_BLOCK)+1)*AES_BLOCK;
+            std::vector<uint8_t> pad(pc); memcpy(pad.data(), buf.data(), ch);
+            uint8_t pv = (uint8_t)(AES_BLOCK-(ch%AES_BLOCK)); if (ch%AES_BLOCK==0) pv=AES_BLOCK;
+            for (size_t j=ch;j<pc;++j) pad[j]=pv;
+            uint8_t siv[AES_BLOCK]; ComputeSha256((uint8_t*)&off, sizeof(off), siv);
+            for (int j=0;j<AES_BLOCK;++j) siv[j]^=iv[j];
+            AesCbcEncrypt(key, siv, pad.data(), pc, encBuf);
+            SetFilePointerEx(h, li, NULL, FILE_BEGIN);
+            WriteFile(h, encBuf.data(), (DWORD)encBuf.size(), &written, NULL);
+            off += ch; rem -= ch;
+            SecureWipe(buf); SecureWipe(pad); SecureWipe(encBuf);
+        }
+        SecureZeroMemory(key, 32); CloseHandle(h);
+        return true;
+    } catch (const std::exception& e) { errorMsg = e.what(); return false; }
+    catch (...) { errorMsg = "Unknown error"; return false; }
 }
 
 bool FileCrypto::EncryptDisk(int diskNum, const std::string& password, std::string& keyPathOut, std::string& errorMsg, void (*progressCb)(const std::string&, size_t, size_t)) {
