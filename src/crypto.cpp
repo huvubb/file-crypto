@@ -715,16 +715,20 @@ std::vector<int> FileCrypto::GetPhysicalDisks() {
 }
 
 bool FileCrypto::IsDiskSystemDisk(int diskNum) {
-    WCHAR sysRoot[MAX_PATH]; GetWindowsDirectoryW(sysRoot, MAX_PATH);
-    char sysLetter = (char)sysRoot[0];
+    // Check all volumes to see if any has Windows\System32 AND is on this disk
     WCHAR volName[MAX_PATH];
     HANDLE volFind = FindFirstVolumeW(volName, MAX_PATH);
-    if (volFind == INVALID_HANDLE_VALUE) return (diskNum == 0);
+    if (volFind == INVALID_HANDLE_VALUE) return false;
     bool found = false;
     do {
         WCHAR paths[MAX_PATH]; DWORD len;
         if (GetVolumePathNamesForVolumeNameW(volName, paths, MAX_PATH, &len) && paths[0]) {
-            if (paths[0] == sysLetter || paths[0] == (sysLetter + 32) || paths[0] == (sysLetter - 32)) {
+            // Check if this volume has Windows\System32
+            std::string checkPath;
+            checkPath += (char)paths[0]; checkPath += ":\\Windows\\System32";
+            DWORD attr = GetFileAttributesA(checkPath.c_str());
+            if (attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY)) {
+                // This is a system volume - check if on our disk
                 std::wstring vn(volName); vn.pop_back();
                 HANDLE vh = CreateFileW(vn.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
                 if (vh != INVALID_HANDLE_VALUE) {
