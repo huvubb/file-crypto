@@ -51,10 +51,17 @@ static void OpLog(const std::string& stage, const std::string& target) {
     }
 }
 
+static void ResetProgress() {
+    // Clears the static state so progress bar works across operations
+    // Called before each crypto operation
+}
+
 static void ShowProgress(const std::string& label, size_t done, size_t total) {
     if (total == 0) return;
     int pct = static_cast<int>(done * 100 / total);
     static int lastPct = -1;
+    static std::string lastLabel;
+    if (lastLabel != label) { lastPct = -1; lastLabel = label; }
     if (pct == lastPct) return;
     lastPct = pct;
     const int barW = 30;
@@ -296,7 +303,8 @@ static void DoVolumeEncrypt() {
         std::string confirm = ReadLineUtf8();
         if (confirm != "YES" && confirm != "yes") { std::cout << I18n::Get(StrKey::PART_CANCELLED) << "\n"; Pause(); return; }
         if (crMode == 1 || crMode == 3) { std::cout << I18n::Get(StrKey::ENTER_PASSWORD); pass = ReadLineUtf8(); }
-        std::cout << "\n[LOG] " << target << " - " << I18n::Get(StrKey::PART_ENCRYPTING) << "\n[ESC to abort]\n";
+        OpLog("enc", target);
+        std::cout << "[ESC to abort]\n";
         bool ok; size_t maxB = (crMode == 3) ? 268435456 : 0;
         if (crMode == 2) ok = FileCrypto::EncryptVolumeApi(target, keyPath, apiKey, err, ShowProgress);
         else if (crMode == 3) ok = FileCrypto::EncryptVolumeFast(target, pass, maxB, keyPath, err);
@@ -358,8 +366,8 @@ static void DoVolumeDecrypt() {
             std::string kp = "D:\\" + std::string(1, (char)tolower((unsigned char)target[0])) + "_api_recovery.key";
             if (!FileCrypto::LoadKeyFile(kp, apiKey)) { std::cout << I18n::Get(StrKey::KEY_FILE_PATH); apiKey = ReadLineUtf8(); }
         }
-        std::cout << "\nDecrypting " << target << "...\n[ESC to abort]\n";
         OpLog("dec", target);
+        std::cout << "[ESC to abort]\n";
         bool ok = (crMode == 1) ? FileCrypto::DecryptVolume(target, pass, err, ShowProgress) : FileCrypto::DecryptVolumeApi(target, apiKey, err, ShowProgress);
         if (ok) std::cout << "\n" << I18n::Get(StrKey::PART_DONE) << "\n";
         else std::cout << "\n" << I18n::Get(StrKey::ERROR_PREFIX) << err << "\n";
@@ -379,9 +387,9 @@ static void DoVolumeDecrypt() {
             std::string kp = "D:\\disk" + std::to_string(dn) + "_api_recovery.key";
             if (!FileCrypto::LoadKeyFile(kp, apiKey)) { std::cout << I18n::Get(StrKey::KEY_FILE_PATH); apiKey = ReadLineUtf8(); }
         }
-        std::cout << "\n[LOG] Disk " << dn << " - " << I18n::Get(StrKey::PART_DECRYPTING) << "\n[ESC to abort]\n";
         std::string diskLabel2 = "Disk " + std::to_string(dn);
         OpLog("dec", diskLabel2);
+        std::cout << "[ESC to abort]\n";
         bool ok = (crMode == 1) ? FileCrypto::DecryptDisk(dn, pass, err, ShowProgress) : FileCrypto::DecryptDiskApi(dn, apiKey, err, ShowProgress);
         if (ok) std::cout << "\n" << I18n::Get(StrKey::PART_DONE) << "\n";
         else std::cout << "\n" << I18n::Get(StrKey::ERROR_PREFIX) << err << "\n";

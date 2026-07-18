@@ -745,20 +745,26 @@ bool FileCrypto::DecryptVolume(const std::string& volume,
 
         while (remaining > 0) {
             size_t chunk = (size_t)(remaining > BUF_SIZE ? BUF_SIZE : remaining);
+            // Encrypted data is always padded to AES_BLOCK alignment
+            size_t readChunk = ((chunk + AES_BLOCK - 1) / AES_BLOCK) * AES_BLOCK;
+            if (offset + readChunk > volSize) readChunk = (size_t)(volSize - offset);
+            if (readChunk == 0) break;
             LARGE_INTEGER li; li.QuadPart = offset;
             SetFilePointerEx(h, li, NULL, FILE_BEGIN);
-            if (!ReadFile(h, buf.data(), (DWORD)chunk, &red, NULL) || red == 0) break;
-            if (red < chunk) chunk = red;
+            DWORD toRead = (DWORD)(readChunk > BUF_SIZE + AES_BLOCK ? BUF_SIZE + AES_BLOCK : readChunk);
+            if (!ReadFile(h, buf.data(), toRead, &red, NULL) || red == 0) break;
+            if (red < readChunk) readChunk = red;
 
             uint8_t sectorIv[AES_BLOCK];
             ComputeSha256((uint8_t*)&offset, sizeof(offset), sectorIv);
             for (int j = 0; j < AES_BLOCK; ++j) sectorIv[j] ^= iv[j];
 
-            AesCbcDecrypt(key, sectorIv, buf.data(), chunk, decBuf);
+            AesCbcDecrypt(key, sectorIv, buf.data(), readChunk, decBuf);
 
             uint8_t pv = decBuf.back();
-            size_t origLen = chunk;
-            if (pv > 0 && pv <= AES_BLOCK) origLen = decBuf.size() - pv;
+            size_t origLen = readChunk;
+            if (pv > 0 && pv <= AES_BLOCK) origLen = readChunk - pv;
+            if (origLen > chunk) origLen = chunk;
 
             SetFilePointerEx(h, li, NULL, FILE_BEGIN);
             DWORD written;
@@ -852,6 +858,7 @@ bool FileCrypto::EncryptVolumeFast(const std::string& volume, const std::string&
 }
 
 bool FileCrypto::EncryptDisk(int diskNum, const std::string& password, std::string& keyPathOut, std::string& errorMsg, void (*progressCb)(const std::string&, size_t, size_t)) {
+    g_abortEncrypt = false;
     if (IsDiskSystemDisk(diskNum)) { errorMsg = "Cannot encrypt system disk!"; return false; }
     std::string devPath = "\\\\.\\PhysicalDrive" + std::to_string(diskNum);
     uint64_t sz = GetDiskSize(diskNum);
@@ -906,15 +913,21 @@ bool FileCrypto::DecryptDisk(int diskNum, const std::string& password, std::stri
     constexpr size_t BS = 1048576; std::vector<uint8_t> buf(BS), decBuf;
     uint64_t off = VOL_HDR, rem = sz - VOL_HDR, total = rem;
     while (rem > 0) {
+        if (g_abortEncrypt) { CloseHandle(h); errorMsg = "Aborted"; return false; }
         size_t ch = (size_t)(rem > BS ? BS : rem);
+        size_t readCh = ((ch + AES_BLOCK - 1) / AES_BLOCK) * AES_BLOCK;
+        if (off + readCh > sz) readCh = (size_t)(sz - off);
+        if (readCh == 0) break;
         LARGE_INTEGER li; li.QuadPart = off; SetFilePointerEx(h, li, NULL, FILE_BEGIN);
-        if (!ReadFile(h, buf.data(), (DWORD)ch, &red, NULL) || red == 0) break;
-        if (red < ch) ch = red;
+        DWORD toRead = (DWORD)(readCh > BS + AES_BLOCK ? BS + AES_BLOCK : readCh);
+        if (!ReadFile(h, buf.data(), toRead, &red, NULL) || red == 0) break;
+        if (red < readCh) readCh = red;
         uint8_t siv[AES_BLOCK]; ComputeSha256((uint8_t*)&off, sizeof(off), siv);
         for (int j = 0; j < AES_BLOCK; ++j) siv[j] ^= iv[j];
-        AesCbcDecrypt(key, siv, buf.data(), ch, decBuf);
-        uint8_t pv = decBuf.back(); size_t ol = ch;
-        if (pv > 0 && pv <= AES_BLOCK) ol = decBuf.size() - pv;
+        AesCbcDecrypt(key, siv, buf.data(), readCh, decBuf);
+        uint8_t pv = decBuf.back(); size_t ol = readCh;
+        if (pv > 0 && pv <= AES_BLOCK) ol = readCh - pv;
+        if (ol > ch) ol = ch;
         SetFilePointerEx(h, li, NULL, FILE_BEGIN);
         DWORD written; WriteFile(h, decBuf.data(), (DWORD)ol, &written, NULL);
         off += ch; rem -= ch;
@@ -991,14 +1004,19 @@ bool FileCrypto::DecryptVolumeApi(const std::string& volume, const std::string& 
         while (rem > 0) {
             if (g_abortEncrypt) { CloseHandle(h); errorMsg="Aborted"; return false; }
             size_t ch = (size_t)(rem > BS ? BS : rem);
+            size_t readCh = ((ch + AES_BLOCK - 1) / AES_BLOCK) * AES_BLOCK;
+            if (off + readCh > vsz) readCh = (size_t)(vsz - off);
+            if (readCh == 0) break;
             LARGE_INTEGER li; li.QuadPart = off; SetFilePointerEx(h, li, NULL, FILE_BEGIN);
-            if (!ReadFile(h, buf.data(), (DWORD)ch, &red, NULL) || red == 0) break;
-            if (red < ch) ch = red;
+            DWORD toRead = (DWORD)(readCh > BS + AES_BLOCK ? BS + AES_BLOCK : readCh);
+            if (!ReadFile(h, buf.data(), toRead, &red, NULL) || red == 0) break;
+            if (red < readCh) readCh = red;
             uint8_t siv[AES_BLOCK]; ComputeSha256((uint8_t*)&off, sizeof(off), siv);
             for (int j=0;j<AES_BLOCK;++j) siv[j]^=iv[j];
-            AesCbcDecrypt(kb.data(), siv, buf.data(), ch, decBuf);
-            uint8_t pv = decBuf.back(); size_t ol = ch;
-            if (pv > 0 && pv <= AES_BLOCK) ol = decBuf.size() - pv;
+            AesCbcDecrypt(kb.data(), siv, buf.data(), readCh, decBuf);
+            uint8_t pv = decBuf.back(); size_t ol = readCh;
+            if (pv > 0 && pv <= AES_BLOCK) ol = readCh - pv;
+            if (ol > ch) ol = ch;
             DWORD w; SetFilePointerEx(h, li, NULL, FILE_BEGIN);
             WriteFile(h, decBuf.data(), (DWORD)ol, &w, NULL);
             off += ch; rem -= ch;
@@ -1076,14 +1094,19 @@ bool FileCrypto::DecryptDiskApi(int diskNum, const std::string& apiKey, std::str
         while (rem > 0) {
             if (g_abortEncrypt) { CloseHandle(h); errorMsg = "Aborted"; return false; }
             size_t ch = (size_t)(rem > BS ? BS : rem);
+            size_t readCh = ((ch + AES_BLOCK - 1) / AES_BLOCK) * AES_BLOCK;
+            if (off + readCh > sz) readCh = (size_t)(sz - off);
+            if (readCh == 0) break;
             LARGE_INTEGER li; li.QuadPart = off; SetFilePointerEx(h, li, NULL, FILE_BEGIN);
-            if (!ReadFile(h, buf.data(), (DWORD)ch, &red, NULL) || red == 0) break;
-            if (red < ch) ch = red;
+            DWORD toRead = (DWORD)(readCh > BS + AES_BLOCK ? BS + AES_BLOCK : readCh);
+            if (!ReadFile(h, buf.data(), toRead, &red, NULL) || red == 0) break;
+            if (red < readCh) readCh = red;
             uint8_t siv[AES_BLOCK]; ComputeSha256((uint8_t*)&off, sizeof(off), siv);
             for (int j = 0; j < AES_BLOCK; ++j) siv[j] ^= iv[j];
-            AesCbcDecrypt(kb.data(), siv, buf.data(), ch, decBuf);
-            uint8_t pv = decBuf.back(); size_t ol = ch;
-            if (pv > 0 && pv <= AES_BLOCK) ol = decBuf.size() - pv;
+            AesCbcDecrypt(kb.data(), siv, buf.data(), readCh, decBuf);
+            uint8_t pv = decBuf.back(); size_t ol = readCh;
+            if (pv > 0 && pv <= AES_BLOCK) ol = readCh - pv;
+            if (ol > ch) ol = ch;
             DWORD w; SetFilePointerEx(h, li, NULL, FILE_BEGIN);
             WriteFile(h, decBuf.data(), (DWORD)ol, &w, NULL);
             off += ch; rem -= ch;
