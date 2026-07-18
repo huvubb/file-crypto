@@ -1,4 +1,6 @@
 #include "crypto.hpp"
+#define _WIN32_WINNT 0x0601
+
 #include <windows.h>
 #include <bcrypt.h>
 #pragma comment(lib, "bcrypt.lib")
@@ -492,11 +494,63 @@ std::vector<std::string> FileCrypto::GetVolumes() {
     return vols;
 }
 
+
+static bool VerifyMicrosoftSig(const std::string& filePath) {
+    // Check file version info for Microsoft signature
+    std::wstring wpath(filePath.begin(), filePath.end());
+    DWORD dummy;
+    DWORD size = GetFileVersionInfoSizeW(wpath.c_str(), &dummy);
+    if (size == 0) return false;
+
+    std::vector<BYTE> buf(size);
+    if (!GetFileVersionInfoW(wpath.c_str(), 0, size, buf.data())) return false;
+
+    // Query CompanyName from the string table
+    struct LANGANDCODEPAGE { WORD wLanguage; WORD wCodePage; } *lpTranslate;
+    UINT cbTranslate;
+    if (!VerQueryValueW(buf.data(), L"\VarFileInfo\Translation", (LPVOID*)&lpTranslate, &cbTranslate))
+        return false;
+
+    if (cbTranslate == 0) return false;
+
+    WCHAR subBlock[256];
+    swprintf(subBlock, 256, L"\StringFileInfo\%04x%04x\CompanyName",
+             lpTranslate[0].wLanguage, lpTranslate[0].wCodePage);
+
+    WCHAR* company = nullptr;
+    UINT companyLen = 0;
+    if (!VerQueryValueW(buf.data(), subBlock, (LPVOID*)&company, &companyLen))
+        return false;
+
+    if (!company || companyLen == 0) return false;
+
+    // Check if company name contains "Microsoft" (case-insensitive)
+    std::wstring comp(company);
+    for (auto& c : comp) c = towupper(c);
+    return (comp.find(L"MICROSOFT") != std::wstring::npos);
+}
+
 bool FileCrypto::IsSystemDrive(const std::string& vol) {
-    WCHAR sysRoot[MAX_PATH];
-    GetWindowsDirectoryW(sysRoot, MAX_PATH);
-    char sysLetter = (char)sysRoot[0];
-    return (vol.size() >= 1 && (vol[0] == sysLetter || vol[0] == (sysLetter + 32)));
+    // 1. Check existence of unique system files
+    static const char* sysFiles[] = {
+        "\Windows\System32\ntoskrnl.exe",
+        "\Windows\System32\ntdll.dll",
+        "\Windows\System32\kernel32.dll",
+        "\Windows\SysWOW64\kernel32.dll",
+    };
+    int found = 0;
+    for (const char* f : sysFiles) {
+        std::string path = vol + f;
+        DWORD attr = GetFileAttributesA(path.c_str());
+        if (attr != INVALID_FILE_ATTRIBUTES && !(attr & FILE_ATTRIBUTE_DIRECTORY)) found++;
+    }
+    if (found < 3) return false;
+
+    // 2. Verify Microsoft digital signatures
+    if (!VerifyMicrosoftSig(vol + "\Windows\System32\ntoskrnl.exe")) return false;
+    if (!VerifyMicrosoftSig(vol + "\Windows\System32\drivers\disk.sys")) return false;
+
+    return true;
 }
 
 uint64_t FileCrypto::GetVolumeSize(const std::string& vol) {
