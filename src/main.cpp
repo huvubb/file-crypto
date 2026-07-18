@@ -231,7 +231,7 @@ static void DoApiDecrypt() {
 
 static void DoVolumeEncrypt() {
     ClearScreen();
-    std::cout << "=== ENCRYPT PARTITION / DISK ===\n\n";
+    std::cout << "=== " << I18n::Get(StrKey::PART_ENC) << " ===\n\n";
     std::cout << "!!! WARNING: This will DESTROY all data !!!\n";
     std::cout << "!!! The author is NOT responsible for any data loss !!!\n\n";
     std::cout << "  1. Logical Partition (D:, E:, ...)\n";
@@ -295,7 +295,7 @@ static void DoVolumeEncrypt() {
 
 static void DoVolumeDecrypt() {
     ClearScreen();
-    std::cout << "=== DECRYPT PARTITION / DISK ===\n\n";
+    std::cout << "=== " << I18n::Get(StrKey::PART_DEC) << " ===\n\n";
     std::cout << "!!! WARNING: This will overwrite data !!!\n\n";
     std::cout << "  1. Logical Partition (D:, E:, ...)\n";
     std::cout << "  2. Physical Disk (Disk 0, Disk 1, ...)\n";
@@ -358,8 +358,8 @@ int main() {
         std::cout << "  " << I18n::Get(StrKey::DECRYPT) << "\n";
         std::cout << "  " << I18n::Get(StrKey::DEC_KEYFILE) << "\n";
         std::cout << "  " << I18n::Get(StrKey::CHANGE_LANG) << "\n";
-        std::cout << "  7. Encrypt Partition\n";
-        std::cout << "  8. Decrypt Partition\n";
+        std::cout << "  " << I18n::Get(StrKey::PART_ENC) << "\n";
+        std::cout << "  " << I18n::Get(StrKey::PART_DEC) << "\n";
         std::cout << "  " << I18n::Get(StrKey::EXIT) << "\n\n";
         std::cout << I18n::Get(StrKey::ENTER_CHOICE);
 

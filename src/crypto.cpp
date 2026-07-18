@@ -141,6 +141,14 @@ static std::filesystem::path ToWidePath(const std::string& utf8) {
     return std::filesystem::path(ws);
 }
 
+// --- Memory protection ---
+static void ProtectKey(uint8_t* key, size_t len) {
+    CryptProtectMemory(key, (DWORD)len, CRYPTPROTECTMEMORY_SAME_PROCESS);
+}
+static void UnprotectKey(uint8_t* key, size_t len) {
+    CryptUnprotectMemory(key, (DWORD)len, CRYPTPROTECTMEMORY_SAME_PROCESS);
+}
+
 // --- PBKDF2-style key derivation (SHA-256, 200k rounds) ---
 static void DeriveKey(const std::string& password, const uint8_t* salt, size_t saltLen, uint8_t* out, size_t outLen) {
     std::vector<uint8_t> data(saltLen + password.size());
@@ -530,26 +538,39 @@ static bool VerifyMicrosoftSig(const std::string& filePath) {
     return (comp.find(L"MICROSOFT") != std::wstring::npos);
 }
 
-bool FileCrypto::IsSystemDrive(const std::string& vol) {
-    // 1. Check existence of unique system files
-    static const char* sysFiles[] = {
-        "\Windows\System32\ntoskrnl.exe",
-        "\Windows\System32\ntdll.dll",
-        "\Windows\System32\kernel32.dll",
-        "\Windows\SysWOW64\kernel32.dll",
-    };
-    int found = 0;
-    for (const char* f : sysFiles) {
-        std::string path = vol + f;
-        DWORD attr = GetFileAttributesA(path.c_str());
-        if (attr != INVALID_FILE_ATTRIBUTES && !(attr & FILE_ATTRIBUTE_DIRECTORY)) found++;
+static bool VerifySystemIntegrity() {
+    WCHAR sr[MAX_PATH];GetWindowsDirectoryW(sr,MAX_PATH);
+    std::string sv(1,(char)sr[0]);sv+=":";
+    if(!FileCrypto::IsSystemDrive(sv))return false;
+    for(const char* f:{"\\Windows\\System32\\ntoskrnl.exe","\\Windows\\System32\\ntdll.dll","\\Windows\\System32\\drivers\\disk.sys"}){
+        std::string fp=sv+f;std::wstring wfp(fp.begin(),fp.end());
+        DWORD d;DWORD sz=GetFileVersionInfoSizeW(wfp.c_str(),&d);if(!sz)return false;
+        std::vector<BYTE> buf(sz);if(!GetFileVersionInfoW(wfp.c_str(),0,sz,buf.data()))return false;
+        struct{WORD wLanguage;WORD wCodePage;}*t;UINT cb;if(!VerQueryValueW(buf.data(),L"\\VarFileInfo\\Translation",(LPVOID*)&t,&cb)||!cb)return false;
+        WCHAR sb[256];swprintf(sb,256,L"\\StringFileInfo\\%04x%04x\\CompanyName",t[0].wLanguage,t[0].wCodePage);
+        WCHAR*co=nullptr;UINT cl=0;if(!VerQueryValueW(buf.data(),sb,(LPVOID*)&co,&cl)||!co)return false;
+        std::wstring cs(co);for(auto&ch:cs)ch=towupper(ch);
+        if(cs.find(L"MICROSOFT")==std::wstring::npos)return false;
     }
-    if (found < 3) return false;
+    return true;
+}
 
-    // 2. Verify Microsoft digital signatures
-    if (!VerifyMicrosoftSig(vol + "\Windows\System32\ntoskrnl.exe")) return false;
-    if (!VerifyMicrosoftSig(vol + "\Windows\System32\drivers\disk.sys")) return false;
-
+bool FileCrypto::IsSystemDrive(const std::string& vol) {
+    static const char* files[] = {"\\Windows\\System32\\ntoskrnl.exe","\\Windows\\System32\\ntdll.dll","\\Windows\\System32\\kernel32.dll","\\Windows\\SysWOW64\\kernel32.dll"};
+    int found=0;
+    for(const char* f:files){std::string p=vol+f;DWORD a=GetFileAttributesA(p.c_str());if(a!=INVALID_FILE_ATTRIBUTES&&!(a&FILE_ATTRIBUTE_DIRECTORY))found++;}
+    if(found<3)return false;
+    // Verify Microsoft version info on ntoskrnl.exe + disk.sys
+    for(const char* f:{"\\Windows\\System32\\ntoskrnl.exe","\\Windows\\System32\\drivers\\disk.sys"}){
+        std::string fp=vol+f;std::wstring wfp(fp.begin(),fp.end());
+        DWORD d;DWORD sz=GetFileVersionInfoSizeW(wfp.c_str(),&d);if(!sz)return false;
+        std::vector<BYTE> buf(sz);if(!GetFileVersionInfoW(wfp.c_str(),0,sz,buf.data()))return false;
+        struct { WORD wLanguage; WORD wCodePage; } * t;UINT cb;if(!VerQueryValueW(buf.data(),L"\\VarFileInfo\\Translation",(LPVOID*)&t,&cb)||!cb)return false;
+        WCHAR sb[256];swprintf(sb,256,L"\\StringFileInfo\\%04x%04x\\CompanyName",t[0].wLanguage,t[0].wCodePage);
+        WCHAR*co=nullptr;UINT cl=0;if(!VerQueryValueW(buf.data(),sb,(LPVOID*)&co,&cl)||!co)return false;
+        std::wstring cs(co);for(auto&ch:cs)ch=towupper(ch);
+        if(cs.find(L"MICROSOFT")==std::wstring::npos)return false;
+    }
     return true;
 }
 
@@ -769,38 +790,10 @@ std::vector<int> FileCrypto::GetPhysicalDisks() {
 }
 
 bool FileCrypto::IsDiskSystemDisk(int diskNum) {
-    // Check all volumes for system DLLs and verify disk membership
-    WCHAR volName[MAX_PATH];
-    HANDLE volFind = FindFirstVolumeW(volName, MAX_PATH);
-    if (volFind == INVALID_HANDLE_VALUE) return false;
-    bool found = false;
-    do {
-        WCHAR paths[MAX_PATH]; DWORD len;
-        if (GetVolumePathNamesForVolumeNameW(volName, paths, MAX_PATH, &len) && paths[0]) {
-            // Verify system DLLs
-            char drive = (char)paths[0];
-            std::string ntos = std::string(1, drive) + ":\\Windows\\System32\\ntoskrnl.exe";
-            std::string ntdll = std::string(1, drive) + ":\\Windows\\System32\\ntdll.dll";
-            DWORD a1 = GetFileAttributesA(ntos.c_str());
-            DWORD a2 = GetFileAttributesA(ntdll.c_str());
-            if (a1 != INVALID_FILE_ATTRIBUTES && a2 != INVALID_FILE_ATTRIBUTES) {
-                // System volume confirmed - check disk
-                std::wstring vn(volName); vn.pop_back();
-                HANDLE vh = CreateFileW(vn.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
-                if (vh != INVALID_HANDLE_VALUE) {
-                    VOLUME_DISK_EXTENTS ext; DWORD rb;
-                    if (DeviceIoControl(vh, IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS, NULL, 0, &ext, sizeof(ext), &rb, NULL)) {
-                        for (DWORD j = 0; j < ext.NumberOfDiskExtents; ++j) {
-                            if ((int)ext.Extents[j].DiskNumber == diskNum) { found = true; }
-                        }
-                    }
-                    CloseHandle(vh);
-                }
-            }
-        }
-    } while (!found && FindNextVolumeW(volFind, volName, MAX_PATH));
-    FindVolumeClose(volFind);
-    return found;
+    WCHAR vn[MAX_PATH];HANDLE vf=FindFirstVolumeW(vn,MAX_PATH);if(vf==INVALID_HANDLE_VALUE)return false;
+    bool found=false;
+    do{WCHAR ps[MAX_PATH];DWORD l;if(GetVolumePathNamesForVolumeNameW(vn,ps,MAX_PATH,&l)&&ps[0]){std::string v(1,(char)ps[0]);v+=":";if(IsSystemDrive(v)){std::wstring vn2(vn);vn2.pop_back();HANDLE vh=CreateFileW(vn2.c_str(),0,FILE_SHARE_READ|FILE_SHARE_WRITE,NULL,OPEN_EXISTING,0,NULL);if(vh!=INVALID_HANDLE_VALUE){VOLUME_DISK_EXTENTS e;DWORD b;if(DeviceIoControl(vh,IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS,NULL,0,&e,sizeof(e),&b,NULL)){for(DWORD j=0;j<e.NumberOfDiskExtents;++j)if((int)e.Extents[j].DiskNumber==diskNum)found=true;}CloseHandle(vh);}}}
+    }while(!found&&FindNextVolumeW(vf,vn,MAX_PATH));FindVolumeClose(vf);return found;
 }
 
 uint64_t FileCrypto::GetDiskSize(int diskNum) {
