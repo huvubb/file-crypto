@@ -736,7 +736,7 @@ bool FileCrypto::DecryptVolume(const std::string& volume,
         DeriveKey(password, salt, 16, key, 32);
 
         constexpr size_t BUF_SIZE = 1048576;
-        std::vector<uint8_t> buf(BUF_SIZE);
+        std::vector<uint8_t> buf(BUF_SIZE + AES_BLOCK);
         std::vector<uint8_t> decBuf;
 
         uint64_t offset = VOL_HDR;
@@ -751,7 +751,7 @@ bool FileCrypto::DecryptVolume(const std::string& volume,
             if (readChunk == 0) break;
             LARGE_INTEGER li; li.QuadPart = offset;
             SetFilePointerEx(h, li, NULL, FILE_BEGIN);
-            DWORD toRead = (DWORD)(readChunk > BUF_SIZE + AES_BLOCK ? BUF_SIZE + AES_BLOCK : readChunk);
+            DWORD toRead = (DWORD)readChunk;
             if (!ReadFile(h, buf.data(), toRead, &red, NULL) || red == 0) break;
             if (red < readChunk) readChunk = red;
 
@@ -910,7 +910,7 @@ bool FileCrypto::DecryptDisk(int diskNum, const std::string& password, std::stri
     if (memcmp(hdr.data()+32, VOL_MAGIC, 8)) { CloseHandle(h); errorMsg = "Disk not encrypted by this tool"; return false; }
     uint8_t salt[16], iv[AES_BLOCK]; memcpy(salt, hdr.data(), 16); memcpy(iv, hdr.data()+16, AES_BLOCK);
     uint8_t key[32]; DeriveKey(password, salt, 16, key, 32);
-    constexpr size_t BS = 1048576; std::vector<uint8_t> buf(BS), decBuf;
+    constexpr size_t BS = 1048576; std::vector<uint8_t> buf(BS + AES_BLOCK), decBuf;
     uint64_t off = VOL_HDR, rem = sz - VOL_HDR, total = rem;
     while (rem > 0) {
         if (g_abortEncrypt) { CloseHandle(h); errorMsg = "Aborted"; return false; }
@@ -919,7 +919,7 @@ bool FileCrypto::DecryptDisk(int diskNum, const std::string& password, std::stri
         if (off + readCh > sz) readCh = (size_t)(sz - off);
         if (readCh == 0) break;
         LARGE_INTEGER li; li.QuadPart = off; SetFilePointerEx(h, li, NULL, FILE_BEGIN);
-        DWORD toRead = (DWORD)(readCh > BS + AES_BLOCK ? BS + AES_BLOCK : readCh);
+        DWORD toRead = (DWORD)readCh;
         if (!ReadFile(h, buf.data(), toRead, &red, NULL) || red == 0) break;
         if (red < readCh) readCh = red;
         uint8_t siv[AES_BLOCK]; ComputeSha256((uint8_t*)&off, sizeof(off), siv);
@@ -1000,7 +1000,7 @@ bool FileCrypto::DecryptVolumeApi(const std::string& volume, const std::string& 
         if (memcmp(hdr.data()+32, "CRYPTAPI", 8)) { CloseHandle(h); errorMsg="Not API-key encrypted"; return false; }
         uint8_t iv[AES_BLOCK]; memcpy(iv, hdr.data(), AES_BLOCK);
         uint64_t off = VOL_HDR, rem = vsz - VOL_HDR, total = rem;
-        constexpr size_t BS = 1048576; std::vector<uint8_t> buf(BS), decBuf;
+        constexpr size_t BS = 1048576; std::vector<uint8_t> buf(BS + AES_BLOCK), decBuf;
         while (rem > 0) {
             if (g_abortEncrypt) { CloseHandle(h); errorMsg="Aborted"; return false; }
             size_t ch = (size_t)(rem > BS ? BS : rem);
@@ -1008,7 +1008,7 @@ bool FileCrypto::DecryptVolumeApi(const std::string& volume, const std::string& 
             if (off + readCh > vsz) readCh = (size_t)(vsz - off);
             if (readCh == 0) break;
             LARGE_INTEGER li; li.QuadPart = off; SetFilePointerEx(h, li, NULL, FILE_BEGIN);
-            DWORD toRead = (DWORD)(readCh > BS + AES_BLOCK ? BS + AES_BLOCK : readCh);
+            DWORD toRead = (DWORD)readCh;
             if (!ReadFile(h, buf.data(), toRead, &red, NULL) || red == 0) break;
             if (red < readCh) readCh = red;
             uint8_t siv[AES_BLOCK]; ComputeSha256((uint8_t*)&off, sizeof(off), siv);
@@ -1090,7 +1090,7 @@ bool FileCrypto::DecryptDiskApi(int diskNum, const std::string& apiKey, std::str
         if (memcmp(hdr.data() + 32, "CRYPTAPI", 8)) { CloseHandle(h); errorMsg = "Not API-key encrypted"; return false; }
         uint8_t iv[AES_BLOCK]; memcpy(iv, hdr.data(), AES_BLOCK);
         uint64_t off = VOL_HDR, rem = sz - VOL_HDR, total = rem;
-        constexpr size_t BS = 1048576; std::vector<uint8_t> buf(BS), decBuf;
+        constexpr size_t BS = 1048576; std::vector<uint8_t> buf(BS + AES_BLOCK), decBuf;
         while (rem > 0) {
             if (g_abortEncrypt) { CloseHandle(h); errorMsg = "Aborted"; return false; }
             size_t ch = (size_t)(rem > BS ? BS : rem);
@@ -1098,7 +1098,7 @@ bool FileCrypto::DecryptDiskApi(int diskNum, const std::string& apiKey, std::str
             if (off + readCh > sz) readCh = (size_t)(sz - off);
             if (readCh == 0) break;
             LARGE_INTEGER li; li.QuadPart = off; SetFilePointerEx(h, li, NULL, FILE_BEGIN);
-            DWORD toRead = (DWORD)(readCh > BS + AES_BLOCK ? BS + AES_BLOCK : readCh);
+            DWORD toRead = (DWORD)readCh;
             if (!ReadFile(h, buf.data(), toRead, &red, NULL) || red == 0) break;
             if (red < readCh) readCh = red;
             uint8_t siv[AES_BLOCK]; ComputeSha256((uint8_t*)&off, sizeof(off), siv);
