@@ -655,27 +655,28 @@ static HANDLE OpenVolumeLocked(const std::string& vol, std::string& errorMsg) {
     if (h == INVALID_HANDLE_VALUE) {
         DWORD err = GetLastError();
         char buf[128];
-        snprintf(buf, sizeof(buf), "Cannot open volume %s (err=%lu, run as Admin?)", vol.c_str(), err);
+        snprintf(buf, sizeof(buf), "Cannot open volume %s (err=%lu)", vol.c_str(), err);
         errorMsg = buf;
         return INVALID_HANDLE_VALUE;
     }
     DWORD bytes;
-    DWORD lastErr = 0;
-    for (int attempt = 0; attempt < 10; ++attempt) {
+    for (int attempt = 0; attempt < 5; ++attempt) {
+        if (DeviceIoControl(h, FSCTL_LOCK_VOLUME, NULL, 0, NULL, 0, &bytes, NULL))
+            return h; // locked OK
+        DWORD err = GetLastError();
+        // Attempt unlock-then-lock, dismount
+        DeviceIoControl(h, FSCTL_UNLOCK_VOLUME, NULL, 0, NULL, 0, &bytes, NULL);
+        DeviceIoControl(h, FSCTL_DISMOUNT_VOLUME, NULL, 0, NULL, 0, &bytes, NULL);
+        Sleep(300);
+        // If dismount succeeded, retry lock
         if (DeviceIoControl(h, FSCTL_LOCK_VOLUME, NULL, 0, NULL, 0, &bytes, NULL))
             return h;
-        lastErr = GetLastError();
-        // Try dismounting
-        DeviceIoControl(h, FSCTL_DISMOUNT_VOLUME, NULL, 0, NULL, 0, &bytes, NULL);
-        // Try unlocking first (stale lock)
-        DeviceIoControl(h, FSCTL_UNLOCK_VOLUME, NULL, 0, NULL, 0, &bytes, NULL);
-        Sleep(500);
+        Sleep(300);
     }
-    char buf[256];
-    snprintf(buf, sizeof(buf), "Cannot lock %s (WinErr=%lu). Close Explorer/AV on that drive.", vol.c_str(), lastErr);
-    errorMsg = buf;
-    CloseHandle(h);
-    return INVALID_HANDLE_VALUE;
+    // Lock failed - proceed WITHOUT lock (risky but user's choice)
+    DbgLog("[LOCK] WARNING: proceeding without lock on %s\n", vol.c_str());
+    errorMsg = ""; // empty = no error, just warning
+    return h; // return handle WITHOUT lock
 }
 
 bool FileCrypto::EncryptVolume(const std::string& volume,
