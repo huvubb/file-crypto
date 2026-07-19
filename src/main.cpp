@@ -307,6 +307,7 @@ static void DoVolumeEncrypt() {
         if (confirm != "YES" && confirm != "yes") { std::cout << I18n::Get(StrKey::PART_CANCELLED) << "\n"; Pause(); return; }
         if (crMode == 1 || crMode == 3) { std::cout << I18n::Get(StrKey::ENTER_PASSWORD); pass = ReadLineUtf8(); }
         std::cout << "\n  Locking volume... " << std::flush;
+        std::cout << "\n  [i] Closing open handles on " << target << "..." << std::endl;
         OpLog("enc", target);
         std::cout << "[ESC to abort]\n";
         bool ok; size_t maxB = (crMode == 3) ? 268435456 : 0;
@@ -497,6 +498,7 @@ int main() {
         std::cout << "  " << I18n::Get(StrKey::DECRYPT) << "\n";
         std::cout << "  " << I18n::Get(StrKey::DEC_KEYFILE) << "\n";
         std::cout << "  " << I18n::Get(StrKey::CHANGE_LANG) << "\n";
+        std::cout << "  " << I18n::Get(StrKey::DISK_SECTION) << "\n";
         std::cout << "  " << I18n::Get(StrKey::PART_ENC) << "\n";
         std::cout << "  " << I18n::Get(StrKey::PART_DEC) << "\n";
         std::cout << "  " << I18n::Get(StrKey::EXIT) << "\n\n";
@@ -513,7 +515,7 @@ int main() {
             case 8: DoVolumeDecrypt(); break;
             
             
-            case 12: std::cout << "\n" << I18n::Get(StrKey::GOODBYE) << "\n"; return 0;
+            case 6: std::cout << "\n" << I18n::Get(StrKey::GOODBYE) << "\n"; return 0;
             default: std::cout << "\n" << I18n::Get(StrKey::INVALID_CHOICE) << "\n"; Pause();
         }
     }
