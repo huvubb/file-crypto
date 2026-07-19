@@ -757,6 +757,11 @@ bool FileCrypto::DecryptVolume(const std::string& volume,
                                 std::string& errorMsg,
                                 void (*progressCb)(const std::string&, size_t, size_t)) {
     try {
+        if (IsSystemDrive(volume)) {
+            errorMsg = "Cannot decrypt system drive!";
+            return false;
+        }
+
         uint64_t volSize = GetVolumeSize(volume);
         if (volSize == 0) { errorMsg = "Volume inaccessible"; return false; }
 
@@ -948,6 +953,7 @@ bool FileCrypto::EncryptDisk(int diskNum, const std::string& password, std::stri
 
 bool FileCrypto::DecryptDisk(int diskNum, const std::string& password, std::string& errorMsg, void (*progressCb)(const std::string&, size_t, size_t)) {
     g_abortEncrypt = false;
+    if (IsDiskSystemDisk(diskNum)) { errorMsg = "Cannot decrypt system disk!"; return false; }
     std::string devPath = "\\\\.\\PhysicalDrive" + std::to_string(diskNum);
     uint64_t sz = GetDiskSize(diskNum);
     if (sz == 0) { errorMsg = "Disk inaccessible"; return false; }
@@ -1036,6 +1042,7 @@ bool FileCrypto::EncryptVolumeApi(const std::string& volume, std::string& keyPat
 bool FileCrypto::DecryptVolumeApi(const std::string& volume, const std::string& apiKey, std::string& errorMsg, void (*progressCb)(const std::string&, size_t, size_t)) {
     try {
         g_abortEncrypt = false;
+        if (IsSystemDrive(volume)) { errorMsg = "Cannot decrypt system drive!"; return false; }
         if (apiKey.compare(0, strlen(KEY_PREFIX), KEY_PREFIX)) { errorMsg="Invalid API key"; return false; }
         auto kb = Base64Decode(apiKey.substr(strlen(KEY_PREFIX)));
         if (kb.size() != 64) { errorMsg="Wrong key length"; return false; }
@@ -1125,6 +1132,7 @@ bool FileCrypto::EncryptDiskApi(int diskNum, std::string& keyPathOut, std::strin
 bool FileCrypto::DecryptDiskApi(int diskNum, const std::string& apiKey, std::string& errorMsg, void (*progressCb)(const std::string&, size_t, size_t)) {
     try {
         g_abortEncrypt = false;
+        if (IsDiskSystemDisk(diskNum)) { errorMsg = "Cannot decrypt system disk!"; return false; }
         if (apiKey.compare(0, strlen(KEY_PREFIX), KEY_PREFIX)) { errorMsg = "Invalid API key"; return false; }
         auto kb = Base64Decode(apiKey.substr(strlen(KEY_PREFIX)));
         if (kb.size() != 64) { errorMsg = "Wrong key length"; return false; }
