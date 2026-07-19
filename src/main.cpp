@@ -69,7 +69,7 @@ static void ShowProgress(const std::string& label, size_t done, size_t total) {
     lastPct = pct;
     const int barW = 30;
     int filled = barW * pct / 100;
-    std::string bar = "[" + std::string(filled, char(219)) + std::string(barW - filled, char(176)) + "]";
+    std::string bar = "[" + std::string(filled, '=') + std::string(barW - filled, '-') + "]";
     std::cout << "\r  " << label << " " << bar << " " << pct << "% ("
               << FormatSize(done) << "/" << FormatSize(total) << ")    " << std::flush;
     if (done >= total) { std::cout << "\n"; lastPct = -1; }

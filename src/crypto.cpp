@@ -795,24 +795,27 @@ bool FileCrypto::DecryptVolume(const std::string& volume,
             return false;
         }
 
-        if (memcmp(hdr.data() + 32, VOL_MAGIC, 8) != 0) {
+        if (memcmp(hdr.data() + 40, VOL_MAGIC, 8) != 0) {
             CloseHandle(h);
             errorMsg = "Volume is not encrypted by this tool";
             return false;
         }
 
         uint8_t salt[16], iv[AES_BLOCK];
+        uint64_t totalToDecrypt = 0;
         memcpy(salt, hdr.data(), 16);
         memcpy(iv, hdr.data() + 16, AES_BLOCK);
+        memcpy(&totalToDecrypt, hdr.data() + 32, 8);
         uint8_t key[32];
         DeriveKey(password, salt, 16, key, 32);
+
+        if (totalToDecrypt == 0 || totalToDecrypt > volSize) totalToDecrypt = volSize - VOL_HDR;
 
         constexpr size_t BUF_SIZE = 1048576;
         std::vector<uint8_t> buf(BUF_SIZE + AES_BLOCK);
 
         uint64_t offset = VOL_HDR;
-        uint64_t remaining = volSize - VOL_HDR;
-        uint64_t totalToDecrypt = remaining;
+        uint64_t remaining = totalToDecrypt;
 
         while (remaining > 0) {
             size_t chunk = (size_t)(remaining > BUF_SIZE ? BUF_SIZE : remaining);
@@ -940,11 +943,13 @@ bool FileCrypto::EncryptDisk(int diskNum, const std::string& password, std::stri
     std::string apiKey = std::string(KEY_PREFIX) + Base64Encode(key, 32);
     keyPathOut = "D:\\disk" + std::to_string(diskNum) + "_recovery.key";
     SaveKeyFile(keyPathOut, apiKey);
+    uint64_t total = sz - VOL_HDR;
     std::vector<uint8_t> hdr(VOL_HDR, 0);
-    memcpy(hdr.data(), salt, 16); memcpy(hdr.data()+16, iv, AES_BLOCK); memcpy(hdr.data()+32, VOL_MAGIC, 8);
+    memcpy(hdr.data(), salt, 16); memcpy(hdr.data()+16, iv, AES_BLOCK);
+    memcpy(hdr.data()+32, &total, 8); memcpy(hdr.data()+40, VOL_MAGIC, 8);
     DWORD written; SetFilePointer(h, 0, NULL, FILE_BEGIN); WriteFile(h, hdr.data(), VOL_HDR, &written, NULL);
     constexpr size_t BS = 1048576; std::vector<uint8_t> buf(BS), encBuf;
-    uint64_t off = VOL_HDR, rem = sz - VOL_HDR, total = rem;
+    uint64_t off = VOL_HDR, rem = total;
     while (rem > 0) {
         size_t ch = (size_t)(rem > BS ? BS : rem); DWORD red;
         LARGE_INTEGER li; li.QuadPart = off; SetFilePointerEx(h, li, NULL, FILE_BEGIN);
@@ -978,11 +983,14 @@ bool FileCrypto::DecryptDisk(int diskNum, const std::string& password, std::stri
     std::vector<uint8_t> hdr(VOL_HDR); DWORD red;
     SetFilePointer(h, 0, NULL, FILE_BEGIN);
     if (!ReadFile(h, hdr.data(), VOL_HDR, &red, NULL) || red < VOL_HDR) { CloseHandle(h); errorMsg = "Cannot read header"; return false; }
-    if (memcmp(hdr.data()+32, VOL_MAGIC, 8)) { CloseHandle(h); errorMsg = "Disk not encrypted by this tool"; return false; }
-    uint8_t salt[16], iv[AES_BLOCK]; memcpy(salt, hdr.data(), 16); memcpy(iv, hdr.data()+16, AES_BLOCK);
+    if (memcmp(hdr.data()+40, VOL_MAGIC, 8)) { CloseHandle(h); errorMsg = "Disk not encrypted by this tool"; return false; }
+    uint8_t salt[16], iv[AES_BLOCK]; uint64_t total = 0;
+    memcpy(salt, hdr.data(), 16); memcpy(iv, hdr.data()+16, AES_BLOCK);
+    memcpy(&total, hdr.data()+32, 8);
     uint8_t key[32]; DeriveKey(password, salt, 16, key, 32);
+    if (total == 0 || total > sz) total = sz - VOL_HDR;
     constexpr size_t BS = 1048576; std::vector<uint8_t> buf(BS + AES_BLOCK);
-    uint64_t off = VOL_HDR, rem = sz - VOL_HDR, total = rem;
+    uint64_t off = VOL_HDR, rem = total;
     while (rem > 0) {
         if (g_abortEncrypt) { CloseHandle(h); errorMsg = "Aborted"; return false; }
         size_t ch = (size_t)(rem > BS ? BS : rem);
@@ -1027,10 +1035,12 @@ bool FileCrypto::EncryptVolumeApi(const std::string& volume, std::string& keyPat
         apiKeyOut = std::string(KEY_PREFIX) + Base64Encode(mk, 64);
         keyPathOut = "D:\\" + std::string(1, (char)tolower((unsigned char)volume[0])) + "_api_recovery.key";
         SaveKeyFile(keyPathOut, apiKeyOut);
+        uint64_t total = vsz - VOL_HDR;
         std::vector<uint8_t> hdr(VOL_HDR, 0);
-        memcpy(hdr.data(), iv, AES_BLOCK); memcpy(hdr.data()+32, "CRYPTAPI", 8);
+        memcpy(hdr.data(), iv, AES_BLOCK);
+        memcpy(hdr.data()+16, &total, 8); memcpy(hdr.data()+24, "CRYPTAPI", 8);
         DWORD w; SetFilePointer(h, 0, NULL, FILE_BEGIN); WriteFile(h, hdr.data(), VOL_HDR, &w, NULL);
-        uint64_t off = VOL_HDR, rem = vsz - VOL_HDR, total = rem;
+        uint64_t off = VOL_HDR, rem = total;
         constexpr size_t BS = 1048576; std::vector<uint8_t> buf(BS), encBuf;
         while (rem > 0) {
             if (g_abortEncrypt) { CloseHandle(h); errorMsg="Aborted"; return false; }
@@ -1072,9 +1082,12 @@ bool FileCrypto::DecryptVolumeApi(const std::string& volume, const std::string& 
         std::vector<uint8_t> hdr(VOL_HDR); DWORD red;
         SetFilePointer(h, 0, NULL, FILE_BEGIN);
         if (!ReadFile(h, hdr.data(), VOL_HDR, &red, NULL) || red < VOL_HDR) { CloseHandle(h); errorMsg="Bad header"; return false; }
-        if (memcmp(hdr.data()+32, "CRYPTAPI", 8)) { CloseHandle(h); errorMsg="Not API-key encrypted"; return false; }
-        uint8_t iv[AES_BLOCK]; memcpy(iv, hdr.data(), AES_BLOCK);
-        uint64_t off = VOL_HDR, rem = vsz - VOL_HDR, total = rem;
+        if (memcmp(hdr.data()+24, "CRYPTAPI", 8)) { CloseHandle(h); errorMsg="Not API-key encrypted"; return false; }
+        uint8_t iv[AES_BLOCK]; uint64_t total = 0;
+        memcpy(iv, hdr.data(), AES_BLOCK);
+        memcpy(&total, hdr.data()+16, 8);
+        if (total == 0 || total > vsz) total = vsz - VOL_HDR;
+        uint64_t off = VOL_HDR, rem = total;
         constexpr size_t BS = 1048576; std::vector<uint8_t> buf(BS + AES_BLOCK);
         while (rem > 0) {
             if (g_abortEncrypt) { CloseHandle(h); errorMsg="Aborted"; return false; }
@@ -1119,10 +1132,12 @@ bool FileCrypto::EncryptDiskApi(int diskNum, std::string& keyPathOut, std::strin
         apiKeyOut = std::string(KEY_PREFIX) + Base64Encode(mk, 64);
         keyPathOut = "D:\\disk" + std::to_string(diskNum) + "_api_recovery.key";
         SaveKeyFile(keyPathOut, apiKeyOut);
+        uint64_t total = sz - VOL_HDR;
         std::vector<uint8_t> hdr(VOL_HDR, 0);
-        memcpy(hdr.data(), iv, AES_BLOCK); memcpy(hdr.data() + 32, "CRYPTAPI", 8);
+        memcpy(hdr.data(), iv, AES_BLOCK);
+        memcpy(hdr.data()+16, &total, 8); memcpy(hdr.data()+24, "CRYPTAPI", 8);
         DWORD w; SetFilePointer(h, 0, NULL, FILE_BEGIN); WriteFile(h, hdr.data(), VOL_HDR, &w, NULL);
-        uint64_t off = VOL_HDR, rem = sz - VOL_HDR, total = rem;
+        uint64_t off = VOL_HDR, rem = total;
         constexpr size_t BS = 1048576; std::vector<uint8_t> buf(BS), encBuf;
         while (rem > 0) {
             if (g_abortEncrypt) { CloseHandle(h); errorMsg = "Aborted"; return false; }
@@ -1164,9 +1179,12 @@ bool FileCrypto::DecryptDiskApi(int diskNum, const std::string& apiKey, std::str
         std::vector<uint8_t> hdr(VOL_HDR); DWORD red;
         SetFilePointer(h, 0, NULL, FILE_BEGIN);
         if (!ReadFile(h, hdr.data(), VOL_HDR, &red, NULL) || red < VOL_HDR) { CloseHandle(h); errorMsg = "Bad header"; return false; }
-        if (memcmp(hdr.data() + 32, "CRYPTAPI", 8)) { CloseHandle(h); errorMsg = "Not API-key encrypted"; return false; }
-        uint8_t iv[AES_BLOCK]; memcpy(iv, hdr.data(), AES_BLOCK);
-        uint64_t off = VOL_HDR, rem = sz - VOL_HDR, total = rem;
+        if (memcmp(hdr.data() + 24, "CRYPTAPI", 8)) { CloseHandle(h); errorMsg = "Not API-key encrypted"; return false; }
+        uint8_t iv[AES_BLOCK]; uint64_t total = 0;
+        memcpy(iv, hdr.data(), AES_BLOCK);
+        memcpy(&total, hdr.data()+16, 8);
+        if (total == 0 || total > sz) total = sz - VOL_HDR;
+        uint64_t off = VOL_HDR, rem = total;
         constexpr size_t BS = 1048576; std::vector<uint8_t> buf(BS + AES_BLOCK), decBuf;
         while (rem > 0) {
             if (g_abortEncrypt) { CloseHandle(h); errorMsg = "Aborted"; return false; }
