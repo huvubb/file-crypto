@@ -69,28 +69,39 @@ static std::vector<uint8_t> Base64Decode(const std::string& s){
     return r;
 }
 
+// --- Debug log ---
+static FILE* g_dbg = NULL;
+static void DbgLog(const char* fmt, ...) {
+    if (!g_dbg) g_dbg = fopen("D:\\crypto_debug.log", "a");
+    if (!g_dbg) return;
+    va_list args;
+    va_start(args, fmt);
+    vfprintf(g_dbg, fmt, args);
+    va_end(args);
+    fflush(g_dbg);
+}
+
 // --- BCrypt helpers ---
 static void RandBytes(uint8_t* buf, size_t len) { BCryptGenRandom(NULL, buf, (ULONG)len, BCRYPT_USE_SYSTEM_PREFERRED_RNG); }
 
 static BCRYPT_ALG_HANDLE OpenAes() {
     BCRYPT_ALG_HANDLE h = NULL;
     NTSTATUS s = BCryptOpenAlgorithmProvider(&h, BCRYPT_AES_ALGORITHM, NULL, 0);
+    DbgLog("[AES] BCryptOpenAlgorithmProvider: s=0x%08X h=%p\n", s, h);
     if (!BCRYPT_SUCCESS(s) || !h) return NULL;
     s = BCryptSetProperty(h, BCRYPT_CHAINING_MODE, (PUCHAR)BCRYPT_CHAIN_MODE_CBC, sizeof(BCRYPT_CHAIN_MODE_CBC), 0);
+    DbgLog("[AES] BCryptSetProperty(CBC): s=0x%08X\n", s);
     if (!BCRYPT_SUCCESS(s)) { BCryptCloseAlgorithmProvider(h, 0); return NULL; }
     return h;
 }
 
 static BCRYPT_KEY_HANDLE CreateAesKey(BCRYPT_ALG_HANDLE alg, const uint8_t* key, size_t len) {
-    if (!alg || !key || len == 0) return NULL;
+    if (!alg || !key || len == 0) { DbgLog("[KEY] FAIL: invalid params\n"); return NULL; }
     BCRYPT_KEY_HANDLE hk = NULL;
-    // Use GenerateSymmetricKey with pbSecret - most compatible approach
     NTSTATUS s = BCryptGenerateSymmetricKey(alg, &hk, NULL, 0, (PUCHAR)key, (ULONG)len, 0);
-    if (!BCRYPT_SUCCESS(s)) return NULL;
-    // Verify the key object was created correctly
-    ULONG keyObjLen = 0;
-    s = BCryptGetProperty(alg, BCRYPT_OBJECT_LENGTH, (PUCHAR)&keyObjLen, sizeof(keyObjLen), NULL, 0);
-    if (!BCRYPT_SUCCESS(s) || keyObjLen == 0) { BCryptDestroyKey(hk); return NULL; }
+    DbgLog("[KEY] BCryptGenerateSymmetricKey(len=%zu): s=0x%08X hk=%p\n", len, s, hk);
+    if (!BCRYPT_SUCCESS(s)) { DbgLog("[KEY] FAIL: BCryptGenerateSymmetricKey failed\n"); return NULL; }
+    if (!hk) { DbgLog("[KEY] FAIL: hk is NULL despite success\n"); return NULL; }
     return hk;
 }
 
@@ -126,17 +137,6 @@ static bool AesCbcEncrypt(const uint8_t* key, const uint8_t* iv, const uint8_t* 
 }
 
 // --- AES-256-CBC decrypt (IV-safe, error-checked, with debug log) ---
-static FILE* g_dbg = NULL;
-static void DbgLog(const char* fmt, ...) {
-    if (!g_dbg) g_dbg = fopen("D:\\crypto_debug.log", "a");
-    if (!g_dbg) return;
-    va_list args;
-    va_start(args, fmt);
-    vfprintf(g_dbg, fmt, args);
-    va_end(args);
-    fflush(g_dbg);
-}
-
 static bool AesCbcDecrypt(const uint8_t* key, const uint8_t* iv, const uint8_t* in, size_t inLen, std::vector<uint8_t>& out) {
     DbgLog("[DEC] inLen=%zu key[0..3]=%02X%02X%02X%02X iv[0..3]=%02X%02X%02X%02X in[0..3]=%02X%02X%02X%02X\n",
         inLen, key[0],key[1],key[2],key[3], iv[0],iv[1],iv[2],iv[3], in[0],in[1],in[2],in[3]);
