@@ -16,6 +16,7 @@
 #include <vector>
 #include <cstring>
 #include <cstdarg>
+#include <ctime>
 #include <fstream>
 #include <filesystem>
 
@@ -72,7 +73,14 @@ static std::vector<uint8_t> Base64Decode(const std::string& s){
 // --- Debug log ---
 static FILE* g_dbg = NULL;
 static void DbgLog(const char* fmt, ...) {
-    if (!g_dbg) g_dbg = fopen("D:\\crypto_debug.log", "a");
+    if (!g_dbg) {
+        g_dbg = fopen("D:\\crypto_debug.log", "a");
+        if (g_dbg) {
+            time_t t = time(NULL);
+            fprintf(g_dbg, "\n=== RUN %lld ===\n", (long long)t);
+            fflush(g_dbg);
+        }
+    }
     if (!g_dbg) return;
     va_list args;
     va_start(args, fmt);
@@ -991,11 +999,14 @@ bool FileCrypto::DecryptDisk(int diskNum, const std::string& password, std::stri
         for (int j = 0; j < AES_BLOCK; ++j) siv[j] ^= iv[j];
         std::vector<uint8_t> decBuf;
         if (!AesCbcDecrypt(key, siv, buf.data(), readCh, decBuf)) { CloseHandle(h); errorMsg = "Decryption failed (BCrypt error)"; SecureZeroMemory(key, 32); return false; }
+        DbgLog("[DISK] dec ok, decBuf.size=%zu\n", decBuf.size());
         uint8_t pv = decBuf.back(); size_t ol = readCh;
         if (pv > 0 && pv <= AES_BLOCK) ol = readCh - pv;
         if (ol > ch) ol = ch;
+        DbgLog("[DISK] pv=%u ol=%zu ch=%zu\n", pv, ol, ch);
         SetFilePointerEx(h, li, NULL, FILE_BEGIN);
         DWORD written; WriteFile(h, decBuf.data(), (DWORD)ol, &written, NULL);
+        DbgLog("[DISK] wrote %lu bytes at off=%llu\n", written, off);
         off += ch; rem -= ch;
         if (progressCb) progressCb("Decrypting", (size_t)(total - rem), (size_t)total);
     }
