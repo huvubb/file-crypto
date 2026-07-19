@@ -657,16 +657,20 @@ static HANDLE OpenVolumeLocked(const std::string& vol, std::string& errorMsg) {
         return INVALID_HANDLE_VALUE;
     }
     DWORD bytes;
-    if (!DeviceIoControl(h, FSCTL_LOCK_VOLUME, NULL, 0, NULL, 0, &bytes, NULL)) {
-        DeviceIoControl(h, FSCTL_DISMOUNT_VOLUME, NULL, 0, NULL, 0, &bytes, NULL);
-        Sleep(500);
-        if (!DeviceIoControl(h, FSCTL_LOCK_VOLUME, NULL, 0, NULL, 0, &bytes, NULL)) {
-            CloseHandle(h);
-            errorMsg = "Cannot lock volume - close all programs using it";
-            return INVALID_HANDLE_VALUE;
+    // Try lock + dismount + lock with retries
+    for (int attempt = 0; attempt < 8; ++attempt) {
+        if (DeviceIoControl(h, FSCTL_LOCK_VOLUME, NULL, 0, NULL, 0, &bytes, NULL))
+            return h; // locked successfully
+        if (attempt == 0) {
+            // First failure: try dismount
+            DeviceIoControl(h, FSCTL_DISMOUNT_VOLUME, NULL, 0, NULL, 0, &bytes, NULL);
         }
+        // Wait increasing amounts
+        Sleep(300 * (attempt + 1));
     }
-    return h;
+    CloseHandle(h);
+    errorMsg = "Cannot lock volume - close all programs using it and try again";
+    return INVALID_HANDLE_VALUE;
 }
 
 bool FileCrypto::EncryptVolume(const std::string& volume,

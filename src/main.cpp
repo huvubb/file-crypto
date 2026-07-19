@@ -306,6 +306,7 @@ static void DoVolumeEncrypt() {
         std::string confirm = ReadLineUtf8();
         if (confirm != "YES" && confirm != "yes") { std::cout << I18n::Get(StrKey::PART_CANCELLED) << "\n"; Pause(); return; }
         if (crMode == 1 || crMode == 3) { std::cout << I18n::Get(StrKey::ENTER_PASSWORD); pass = ReadLineUtf8(); }
+        std::cout << "\n  Locking volume... " << std::flush;
         OpLog("enc", target);
         std::cout << "[ESC to abort]\n";
         bool ok; size_t maxB = (crMode == 3) ? 268435456 : 0;
