@@ -720,10 +720,12 @@ bool FileCrypto::EncryptVolume(const std::string& volume,
         std::vector<uint8_t> buf(BUF_SIZE);
         std::vector<uint8_t> encBuf;
 
+        uint64_t totalEnc = volSize - VOL_HDR;
         std::vector<uint8_t> hdr(VOL_HDR, 0);
         memcpy(hdr.data(), salt, 16);
         memcpy(hdr.data() + 16, iv, AES_BLOCK);
-        memcpy(hdr.data() + 32, VOL_MAGIC, 8);
+        memcpy(hdr.data() + 32, &totalEnc, 8);
+        memcpy(hdr.data() + 40, VOL_MAGIC, 8);
         DWORD written;
         SetFilePointer(h, 0, NULL, FILE_BEGIN);
         WriteFile(h, hdr.data(), VOL_HDR, &written, NULL);
