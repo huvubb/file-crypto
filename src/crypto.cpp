@@ -809,7 +809,6 @@ bool FileCrypto::DecryptVolume(const std::string& volume,
 
         constexpr size_t BUF_SIZE = 1048576;
         std::vector<uint8_t> buf(BUF_SIZE + AES_BLOCK);
-        std::vector<uint8_t> decBuf;
 
         uint64_t offset = VOL_HDR;
         uint64_t remaining = volSize - VOL_HDR;
@@ -817,7 +816,6 @@ bool FileCrypto::DecryptVolume(const std::string& volume,
 
         while (remaining > 0) {
             size_t chunk = (size_t)(remaining > BUF_SIZE ? BUF_SIZE : remaining);
-            // Encrypted data is always padded to AES_BLOCK alignment
             size_t readChunk = ((chunk + AES_BLOCK - 1) / AES_BLOCK) * AES_BLOCK;
             if (offset + readChunk > volSize) readChunk = (size_t)(volSize - offset);
             if (readChunk == 0) break;
@@ -831,6 +829,7 @@ bool FileCrypto::DecryptVolume(const std::string& volume,
             ComputeSha256((uint8_t*)&offset, sizeof(offset), sectorIv);
             for (int j = 0; j < AES_BLOCK; ++j) sectorIv[j] ^= iv[j];
 
+            std::vector<uint8_t> decBuf;
             if (!AesCbcDecrypt(key, sectorIv, buf.data(), readChunk, decBuf)) { CloseHandle(h); errorMsg = "Decryption failed (BCrypt error)"; SecureZeroMemory(key, 32); return false; }
 
             uint8_t pv = decBuf.back();
@@ -846,7 +845,6 @@ bool FileCrypto::DecryptVolume(const std::string& volume,
             remaining -= chunk;
 
             if (progressCb) progressCb("Decrypting", (size_t)(totalToDecrypt - remaining), (size_t)totalToDecrypt);
-            SecureWipe(buf); SecureWipe(decBuf);
         }
 
         SecureZeroMemory(key, 32);
