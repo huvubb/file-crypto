@@ -117,7 +117,7 @@ static void ComputeSha256(const uint8_t* data, size_t len, uint8_t* hash) {
     BCryptCloseAlgorithmProvider(hAlg, 0);
 }
 
-// --- AES-256-CBC encrypt (IV-safe, error-checked) ---
+// --- AES-256-CBC encrypt (IV-safe, error-checked, malloc) ---
 static bool AesCbcEncrypt(const uint8_t* key, const uint8_t* iv, const uint8_t* in, size_t inLen, std::vector<uint8_t>& out) {
     if (!key || !iv || !in || inLen == 0 || (inLen % AES_BLOCK) != 0) return false;
     BCRYPT_ALG_HANDLE alg = OpenAes();
@@ -128,43 +128,53 @@ static bool AesCbcEncrypt(const uint8_t* key, const uint8_t* iv, const uint8_t* 
     ULONG outLen;
     NTSTATUS s = BCryptEncrypt(hk, (PUCHAR)in, (ULONG)inLen, NULL, (PUCHAR)ivCopy, AES_BLOCK, NULL, 0, &outLen, 0);
     if (!BCRYPT_SUCCESS(s)) { BCryptDestroyKey(hk); BCryptCloseAlgorithmProvider(alg, 0); return false; }
-    out.resize(outLen);
+    uint8_t* outBuf = (uint8_t*)malloc(outLen);
+    if (!outBuf) { BCryptDestroyKey(hk); BCryptCloseAlgorithmProvider(alg, 0); return false; }
     memcpy(ivCopy, iv, AES_BLOCK);
-    s = BCryptEncrypt(hk, (PUCHAR)in, (ULONG)inLen, NULL, (PUCHAR)ivCopy, AES_BLOCK, out.data(), outLen, &outLen, 0);
+    s = BCryptEncrypt(hk, (PUCHAR)in, (ULONG)inLen, NULL, (PUCHAR)ivCopy, AES_BLOCK, outBuf, outLen, &outLen, 0);
     BCryptDestroyKey(hk); BCryptCloseAlgorithmProvider(alg, 0);
     SecureZeroMemory(ivCopy, AES_BLOCK);
-    return BCRYPT_SUCCESS(s);
+    if (!BCRYPT_SUCCESS(s)) { free(outBuf); return false; }
+    out.assign(outBuf, outBuf + outLen);
+    SecureZeroMemory(outBuf, outLen);
+    free(outBuf);
+    return true;
 }
 
 // --- AES-256-CBC decrypt (IV-safe, error-checked, with debug log) ---
 static bool AesCbcDecrypt(const uint8_t* key, const uint8_t* iv, const uint8_t* in, size_t inLen, std::vector<uint8_t>& out) {
-    DbgLog("[DEC] inLen=%zu key[0..3]=%02X%02X%02X%02X iv[0..3]=%02X%02X%02X%02X in[0..3]=%02X%02X%02X%02X\n",
-        inLen, key[0],key[1],key[2],key[3], iv[0],iv[1],iv[2],iv[3], in[0],in[1],in[2],in[3]);
+    DbgLog("[DEC] inLen=%zu\n", inLen);
     if (!key || !iv || !in || inLen == 0 || (inLen % AES_BLOCK) != 0) {
-        DbgLog("[DEC] FAIL: invalid params (null=%d null=%d null=%d len=%zu mod=%zu)\n",
-            !key, !iv, !in, inLen, inLen % AES_BLOCK);
+        DbgLog("[DEC] FAIL: invalid params\n");
         return false;
     }
     BCRYPT_ALG_HANDLE alg = OpenAes();
-    if (!alg) { DbgLog("[DEC] FAIL: OpenAes returned NULL\n"); return false; }
-    DbgLog("[DEC] alg=%p\n", alg);
+    if (!alg) { DbgLog("[DEC] FAIL: OpenAes NULL\n"); return false; }
     BCRYPT_KEY_HANDLE hk = CreateAesKey(alg, key, 32);
-    if (!hk) { DbgLog("[DEC] FAIL: CreateAesKey returned NULL\n"); BCryptCloseAlgorithmProvider(alg, 0); return false; }
-    DbgLog("[DEC] hk=%p\n", hk);
+    if (!hk) { DbgLog("[DEC] FAIL: CreateAesKey NULL\n"); BCryptCloseAlgorithmProvider(alg, 0); return false; }
     uint8_t ivCopy[AES_BLOCK]; memcpy(ivCopy, iv, AES_BLOCK);
-    ULONG outLen;
-    DbgLog("[DEC] calling BCryptDecrypt (size query)...\n");
+    ULONG outLen = 0;
     NTSTATUS s = BCryptDecrypt(hk, (PUCHAR)in, (ULONG)inLen, NULL, (PUCHAR)ivCopy, AES_BLOCK, NULL, 0, &outLen, 0);
-    DbgLog("[DEC] size query result: s=0x%08X outLen=%lu\n", s, outLen);
-    if (!BCRYPT_SUCCESS(s)) { DbgLog("[DEC] FAIL: size query failed\n"); BCryptDestroyKey(hk); BCryptCloseAlgorithmProvider(alg, 0); return false; }
-    out.resize(outLen);
+    DbgLog("[DEC] sizeQuery: s=0x%08X outLen=%lu\n", s, outLen);
+    if (!BCRYPT_SUCCESS(s) || outLen == 0) { DbgLog("[DEC] FAIL: sizeQuery\n"); BCryptDestroyKey(hk); BCryptCloseAlgorithmProvider(alg, 0); return false; }
+    
+    // Use raw malloc to avoid any std::vector issues
+    uint8_t* outBuf = (uint8_t*)malloc(outLen);
+    if (!outBuf) { DbgLog("[DEC] FAIL: malloc(%lu) returned NULL\n", outLen); BCryptDestroyKey(hk); BCryptCloseAlgorithmProvider(alg, 0); return false; }
+    DbgLog("[DEC] outBuf=%016llX\n", (unsigned long long)(uintptr_t)outBuf);
+    
     memcpy(ivCopy, iv, AES_BLOCK);
-    DbgLog("[DEC] calling BCryptDecrypt (actual, out.data()=%p outLen=%lu)...\n", out.data(), outLen);
-    s = BCryptDecrypt(hk, (PUCHAR)in, (ULONG)inLen, NULL, (PUCHAR)ivCopy, AES_BLOCK, out.data(), outLen, &outLen, 0);
-    DbgLog("[DEC] actual result: s=0x%08X finalOutLen=%lu\n", s, outLen);
+    s = BCryptDecrypt(hk, (PUCHAR)in, (ULONG)inLen, NULL, (PUCHAR)ivCopy, AES_BLOCK, outBuf, outLen, &outLen, 0);
+    DbgLog("[DEC] actual: s=0x%08X finalOutLen=%lu\n", s, outLen);
     BCryptDestroyKey(hk); BCryptCloseAlgorithmProvider(alg, 0);
     SecureZeroMemory(ivCopy, AES_BLOCK);
-    if (!BCRYPT_SUCCESS(s)) { DbgLog("[DEC] FAIL: actual decrypt failed\n"); return false; }
+    
+    if (!BCRYPT_SUCCESS(s)) { DbgLog("[DEC] FAIL: actual decrypt\n"); free(outBuf); return false; }
+    
+    // Copy result to vector
+    out.assign(outBuf, outBuf + outLen);
+    SecureZeroMemory(outBuf, outLen);
+    free(outBuf);
     DbgLog("[DEC] SUCCESS\n");
     return true;
 }
