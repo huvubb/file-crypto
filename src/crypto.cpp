@@ -18,8 +18,6 @@
 #include <cstdarg>
 #include <fstream>
 #include <filesystem>
-#include <RestartManager.h>
-#pragma comment(lib, "Rstrtmgr.lib")
 
 // --- Constants ---
 static constexpr const char* KEY_PREFIX = "fck-v2-";
@@ -649,71 +647,33 @@ static std::wstring ToWStr(const std::string& s) {
     return ws;
 }
 
-static std::string GetLockingProcesses(const std::string& volPath) {
-    // Use Restart Manager to find processes locking the volume
-    std::string result;
-    DWORD session = 0;
-    WCHAR key[64] = {0};
-    if (RmStartSession(&session, 0, key) != ERROR_SUCCESS) return result;
-    
-    std::wstring wpath = ToWStr(volPath);
-    LPCWSTR paths[] = { wpath.c_str() };
-    if (RmRegisterResources(session, 1, paths, 0, NULL, 0, NULL) != ERROR_SUCCESS) {
-        RmEndSession(session);
-        return result;
-    }
-    
-    DWORD reason = 0;
-    UINT nProc = 0, nInfo = 0;
-    RM_PROCESS_INFO procInfo[32];
-    
-    // MinGW RmGetList: 5 params (no infoSize)
-    DWORD r = RmGetList(session, &nInfo, &nProc, NULL, &reason);
-    if ((r == ERROR_MORE_DATA || r == ERROR_SUCCESS) && nProc > 0 && nProc <= 32) {
-        if (RmGetList(session, &nInfo, &nProc, procInfo, &reason) == ERROR_SUCCESS) {
-            char buf[256];
-            for (UINT i = 0; i < nProc; ++i) {
-                auto& p = procInfo[i];
-                if (p.strAppName[0]) {
-                    snprintf(buf, sizeof(buf), "\n    %S (PID: %lu)", p.strAppName, p.Process.dwProcessId);
-                    result += buf;
-                } else {
-                    snprintf(buf, sizeof(buf), "\n    PID %lu", p.Process.dwProcessId);
-                    result += buf;
-                }
-            }
-        }
-    }
-    RmEndSession(session);
-    return result;
-}
-
 static HANDLE OpenVolumeLocked(const std::string& vol, std::string& errorMsg) {
     std::string devPath = "\\\\.\\" + vol;
     std::wstring wdev = ToWStr(devPath);
     HANDLE h = CreateFileW(wdev.c_str(), GENERIC_READ | GENERIC_WRITE,
                            FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
     if (h == INVALID_HANDLE_VALUE) {
-        errorMsg = "Cannot open volume " + vol + " (run as Administrator)";
+        DWORD err = GetLastError();
+        char buf[128];
+        snprintf(buf, sizeof(buf), "Cannot open volume %s (err=%lu, run as Admin?)", vol.c_str(), err);
+        errorMsg = buf;
         return INVALID_HANDLE_VALUE;
     }
     DWORD bytes;
-    for (int attempt = 0; attempt < 8; ++attempt) {
+    DWORD lastErr = 0;
+    for (int attempt = 0; attempt < 10; ++attempt) {
         if (DeviceIoControl(h, FSCTL_LOCK_VOLUME, NULL, 0, NULL, 0, &bytes, NULL))
             return h;
-        if (attempt == 0) {
-            DeviceIoControl(h, FSCTL_DISMOUNT_VOLUME, NULL, 0, NULL, 0, &bytes, NULL);
-        }
-        Sleep(300 * (attempt + 1));
+        lastErr = GetLastError();
+        // Try dismounting
+        DeviceIoControl(h, FSCTL_DISMOUNT_VOLUME, NULL, 0, NULL, 0, &bytes, NULL);
+        // Try unlocking first (stale lock)
+        DeviceIoControl(h, FSCTL_UNLOCK_VOLUME, NULL, 0, NULL, 0, &bytes, NULL);
+        Sleep(500);
     }
-    
-    // Build detailed error with process info
-    std::string procs = GetLockingProcesses(devPath);
-    if (!procs.empty()) {
-        errorMsg = "Cannot lock volume " + vol + " - in use by:" + procs;
-    } else {
-        errorMsg = "Cannot lock volume " + vol + " - close all programs using it and try again";
-    }
+    char buf[256];
+    snprintf(buf, sizeof(buf), "Cannot lock %s (WinErr=%lu). Close Explorer/AV on that drive.", vol.c_str(), lastErr);
+    errorMsg = buf;
     CloseHandle(h);
     return INVALID_HANDLE_VALUE;
 }
