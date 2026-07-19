@@ -402,34 +402,75 @@ static void DoVolumeDecrypt() {
 
 
 
-// === Crash Handler ===
+// === 崩溃处理 / Crash Handler ===
+static const char* GetExceptionName(DWORD code) {
+    switch (code) {
+        case 0xC0000005: return "访问违规 (Access Violation)";
+        case 0xC00000FD: return "栈溢出 (Stack Overflow)";
+        case 0xC000001D: return "非法指令 (Illegal Instruction)";
+        case 0xC0000008: return "无效句柄 (Invalid Handle)";
+        case 0xC0000017: return "内存不足 (Out of Memory)";
+        case 0xC0000094: return "除零错误 (Divide by Zero)";
+        case 0xC0000096: return "特权指令 (Privileged Instruction)";
+        default: return "未知异常 (Unknown Exception)";
+    }
+}
+
 static LONG WINAPI MyCrashHandler(EXCEPTION_POINTERS* ep) {
     DWORD code = ep->ExceptionRecord->ExceptionCode;
     void* addr = ep->ExceptionRecord->ExceptionAddress;
-    char buf[512];
-    snprintf(buf, sizeof(buf),
-        "\n*** CRASH DETECTED ***\n"
-        "Exception: 0x%08X at 0x%p\n"
-        "The program will now exit.\n", code, addr);
-    std::cerr << buf;
-    // Try to get module name
+    bool cn = (I18n::CurrentCode() == "zh-CN" || I18n::CurrentCode() == "zh-TW");
+    
+    if (cn) {
+        std::cerr << "\n========================================" << std::endl;
+        std::cerr << "  *** 程序崩溃 ***" << std::endl;
+        std::cerr << "========================================" << std::endl;
+        std::cerr << "  异常类型: " << GetExceptionName(code) << std::endl;
+    } else {
+        std::cerr << "\n========================================" << std::endl;
+        std::cerr << "  *** CRASH DETECTED ***" << std::endl;
+        std::cerr << "========================================" << std::endl;
+        std::cerr << "  Exception: " << GetExceptionName(code) << std::endl;
+    }
+    
+    char buf[128];
+    snprintf(buf, sizeof(buf), "  错误代码: 0x%08X  地址: 0x%p", code, addr);
+    std::cerr << buf << std::endl;
+    
     HMODULE hMod;
     MEMORY_BASIC_INFORMATION mbi;
     if (VirtualQuery(addr, &mbi, sizeof(mbi))) {
         hMod = (HMODULE)mbi.AllocationBase;
         WCHAR modName[MAX_PATH];
         if (GetModuleFileNameW(hMod, modName, MAX_PATH)) {
-            std::wcerr << L"Module: " << modName << L"\n";
+            std::wcerr << L"  模块: " << modName << L"\n";
         }
     }
-    std::cerr << "\nPress Enter to exit...";
+    
+    if (cn) {
+        std::cerr << "\n  可能原因:" << std::endl;
+        if (code == 0xC0000005) {
+            std::cerr << "  - 密钥不匹配或文件已损坏" << std::endl;
+            std::cerr << "  - 磁盘/分区未由此程序加密" << std::endl;
+            std::cerr << "  - 请确认选择了正确的加密模式(密码/API Key)" << std::endl;
+        }
+        std::cerr << "\n  按 Enter 退出..." << std::endl;
+    } else {
+        std::cerr << "\n  Possible causes:" << std::endl;
+        if (code == 0xC0000005) {
+            std::cerr << "  - Wrong password or corrupted data" << std::endl;
+            std::cerr << "  - Disk not encrypted by this tool" << std::endl;
+            std::cerr << "  - Check encryption mode (Password vs API Key)" << std::endl;
+        }
+        std::cerr << "\n  Press Enter to exit..." << std::endl;
+    }
+    
     std::cin.get();
     return EXCEPTION_EXECUTE_HANDLER;
 }
 
 static void InstallCrashHandler() {
     SetUnhandledExceptionFilter(MyCrashHandler);
-    // Also enable for pure virtual call and other CRT failures
     _set_purecall_handler([]() {
         std::cerr << "\n*** PURE VIRTUAL CALL ***\nPress Enter...";
         std::cin.get();
