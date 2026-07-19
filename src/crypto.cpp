@@ -742,18 +742,24 @@ bool FileCrypto::EncryptVolume(const std::string& volume,
             if (!ReadFile(h, buf.data(), (DWORD)chunk, &red, NULL) || red == 0) break;
             if (red < chunk) chunk = red;
 
-            size_t padChunk = ((chunk / AES_BLOCK) + 1) * AES_BLOCK;
-            std::vector<uint8_t> padded(padChunk);
-            memcpy(padded.data(), buf.data(), chunk);
-            uint8_t pv = (uint8_t)(AES_BLOCK - (chunk % AES_BLOCK));
-            if (chunk % AES_BLOCK == 0) pv = AES_BLOCK;
-            for (size_t j = chunk; j < padChunk; ++j) padded[j] = pv;
+            bool isLastChunk = (remaining <= BUF_SIZE);
+            size_t encChunk; std::vector<uint8_t> workBuf;
+            if (isLastChunk) {
+                encChunk = ((chunk + AES_BLOCK - 1) / AES_BLOCK) * AES_BLOCK;
+                if (encChunk == chunk) encChunk += AES_BLOCK;
+                workBuf.resize(encChunk); memcpy(workBuf.data(), buf.data(), chunk);
+                uint8_t pv = (uint8_t)(encChunk - chunk);
+                memset(workBuf.data() + chunk, pv, encChunk - chunk);
+            } else {
+                encChunk = chunk;
+                workBuf.assign(buf.data(), buf.data() + chunk);
+            }
 
             uint8_t sectorIv[AES_BLOCK];
             ComputeSha256((uint8_t*)&offset, sizeof(offset), sectorIv);
             for (int j = 0; j < AES_BLOCK; ++j) sectorIv[j] ^= iv[j];
 
-            if (!AesCbcEncrypt(key, sectorIv, padded.data(), padChunk, encBuf)) { CloseHandle(h); SecureZeroMemory(key,32); errorMsg="Encryption failed (BCrypt error)"; return false; }
+            if (!AesCbcEncrypt(key, sectorIv, workBuf.data(), encChunk, encBuf)) { CloseHandle(h); SecureZeroMemory(key,32); errorMsg="Encryption failed (BCrypt error)"; return false; }
 
             SetFilePointerEx(h, li, NULL, FILE_BEGIN);
             WriteFile(h, encBuf.data(), (DWORD)encBuf.size(), &written, NULL);
@@ -762,7 +768,7 @@ bool FileCrypto::EncryptVolume(const std::string& volume,
             remaining -= chunk;
 
             if (progressCb) progressCb("Encrypting", (size_t)(totalToEncrypt - remaining), (size_t)totalToEncrypt);
-            SecureWipe(buf); SecureWipe(padded); SecureWipe(encBuf);
+            SecureWipe(buf); SecureWipe(workBuf); SecureWipe(encBuf);
         }
 
         SecureZeroMemory(key, 32);
@@ -820,8 +826,15 @@ bool FileCrypto::DecryptVolume(const std::string& volume,
         uint64_t remaining = totalToDecrypt;
 
         while (remaining > 0) {
+            bool isLastDec = (remaining <= BUF_SIZE);
             size_t chunk = (size_t)(remaining > BUF_SIZE ? BUF_SIZE : remaining);
-            size_t readChunk = ((chunk + AES_BLOCK - 1) / AES_BLOCK) * AES_BLOCK;
+            size_t readChunk;
+            if (isLastDec) {
+                readChunk = ((chunk + AES_BLOCK - 1) / AES_BLOCK) * AES_BLOCK;
+                readChunk += AES_BLOCK; // PKCS7 always adds at least one block
+            } else {
+                readChunk = chunk;
+            }
             if (offset + readChunk > volSize) readChunk = (size_t)(volSize - offset);
             if (readChunk == 0) break;
             LARGE_INTEGER li; li.QuadPart = offset;
@@ -837,10 +850,15 @@ bool FileCrypto::DecryptVolume(const std::string& volume,
             std::vector<uint8_t> decBuf;
             if (!AesCbcDecrypt(key, sectorIv, buf.data(), readChunk, decBuf)) { CloseHandle(h); errorMsg = "Decryption failed (BCrypt error)"; SecureZeroMemory(key, 32); return false; }
 
-            uint8_t pv = decBuf.back();
-            size_t origLen = readChunk;
-            if (pv > 0 && pv <= AES_BLOCK) origLen = readChunk - pv;
-            if (origLen > chunk) origLen = chunk;
+            size_t origLen;
+            if (isLastDec) {
+                uint8_t pv = decBuf.back();
+                origLen = readChunk;
+                if (pv > 0 && pv <= AES_BLOCK) origLen = readChunk - pv;
+                if (origLen > chunk) origLen = chunk;
+            } else {
+                origLen = readChunk;
+            }
 
             SetFilePointerEx(h, li, NULL, FILE_BEGIN);
             DWORD written;
@@ -915,17 +933,25 @@ bool FileCrypto::EncryptVolumeFast(const std::string& volume, const std::string&
             LARGE_INTEGER li; li.QuadPart = off; SetFilePointerEx(h, li, NULL, FILE_BEGIN);
             if (!ReadFile(h, buf.data(), (DWORD)ch, &red, NULL) || red == 0) break;
             if (red < ch) ch = red;
-            size_t pc = ((ch/AES_BLOCK)+1)*AES_BLOCK;
-            std::vector<uint8_t> pad(pc); memcpy(pad.data(), buf.data(), ch);
-            uint8_t pv = (uint8_t)(AES_BLOCK-(ch%AES_BLOCK)); if (ch%AES_BLOCK==0) pv=AES_BLOCK;
-            for (size_t j=ch;j<pc;++j) pad[j]=pv;
+            bool isLastFast = (rem <= 1048576);
+            size_t encSize; std::vector<uint8_t> workBuf;
+            if (isLastFast) {
+                encSize = ((ch + AES_BLOCK - 1) / AES_BLOCK) * AES_BLOCK;
+                if (encSize == ch) encSize += AES_BLOCK;
+                workBuf.resize(encSize); memcpy(workBuf.data(), buf.data(), ch);
+                uint8_t pv = (uint8_t)(encSize - ch);
+                memset(workBuf.data() + ch, pv, encSize - ch);
+            } else {
+                encSize = ch;
+                workBuf.assign(buf.data(), buf.data() + ch);
+            }
             uint8_t siv[AES_BLOCK]; ComputeSha256((uint8_t*)&off, sizeof(off), siv);
             for (int j=0;j<AES_BLOCK;++j) siv[j]^=iv[j];
-            if (!AesCbcEncrypt(key, siv, pad.data(), pc, encBuf)) { CloseHandle(h); SecureZeroMemory(key,32); errorMsg="Encryption failed (BCrypt error)"; return false; }
+            if (!AesCbcEncrypt(key, siv, workBuf.data(), encSize, encBuf)) { CloseHandle(h); SecureZeroMemory(key,32); errorMsg="Encryption failed (BCrypt error)"; return false; }
             SetFilePointerEx(h, li, NULL, FILE_BEGIN);
             WriteFile(h, encBuf.data(), (DWORD)encBuf.size(), &written, NULL);
             off += ch; rem -= ch;
-            SecureWipe(buf); SecureWipe(pad); SecureWipe(encBuf);
+            SecureWipe(buf); SecureWipe(workBuf); SecureWipe(encBuf);
         }
         SecureZeroMemory(key, 32); CloseHandle(h);
         return true;
@@ -958,18 +984,26 @@ bool FileCrypto::EncryptDisk(int diskNum, const std::string& password, std::stri
         LARGE_INTEGER li; li.QuadPart = off; SetFilePointerEx(h, li, NULL, FILE_BEGIN);
         if (!ReadFile(h, buf.data(), (DWORD)ch, &red, NULL) || red == 0) break;
         if (red < ch) ch = red;
-        size_t padCh = ((ch / AES_BLOCK) + 1) * AES_BLOCK;
-        std::vector<uint8_t> pad(padCh); memcpy(pad.data(), buf.data(), ch);
-        uint8_t pv = (uint8_t)(AES_BLOCK - (ch % AES_BLOCK)); if (ch % AES_BLOCK == 0) pv = AES_BLOCK;
-        for (size_t j = ch; j < padCh; ++j) pad[j] = pv;
+        bool isLastDisk = (rem <= BS);
+        size_t encSize; std::vector<uint8_t> workBuf;
+        if (isLastDisk) {
+            encSize = ((ch + AES_BLOCK - 1) / AES_BLOCK) * AES_BLOCK;
+            if (encSize == ch) encSize += AES_BLOCK;
+            workBuf.resize(encSize); memcpy(workBuf.data(), buf.data(), ch);
+            uint8_t pv = (uint8_t)(encSize - ch);
+            memset(workBuf.data() + ch, pv, encSize - ch);
+        } else {
+            encSize = ch;
+            workBuf.assign(buf.data(), buf.data() + ch);
+        }
         uint8_t siv[AES_BLOCK]; ComputeSha256((uint8_t*)&off, sizeof(off), siv);
         for (int j = 0; j < AES_BLOCK; ++j) siv[j] ^= iv[j];
-        if (!AesCbcEncrypt(key, siv, pad.data(), padCh, encBuf)) { CloseHandle(h); SecureZeroMemory(key,32); errorMsg="Encryption failed (BCrypt error)"; return false; }
+        if (!AesCbcEncrypt(key, siv, workBuf.data(), encSize, encBuf)) { CloseHandle(h); SecureZeroMemory(key,32); errorMsg="Encryption failed (BCrypt error)"; return false; }
         SetFilePointerEx(h, li, NULL, FILE_BEGIN);
         WriteFile(h, encBuf.data(), (DWORD)encBuf.size(), &written, NULL);
         off += ch; rem -= ch;
         if (progressCb) progressCb("Encrypting", (size_t)(total - rem), (size_t)total);
-        SecureWipe(buf); SecureWipe(pad); SecureWipe(encBuf);
+        SecureWipe(buf); SecureWipe(workBuf); SecureWipe(encBuf);
     }
     SecureZeroMemory(key, 32); CloseHandle(h);
     return true;
@@ -996,8 +1030,15 @@ bool FileCrypto::DecryptDisk(int diskNum, const std::string& password, std::stri
     uint64_t off = VOL_HDR, rem = total;
     while (rem > 0) {
         if (g_abortEncrypt) { CloseHandle(h); errorMsg = "Aborted"; return false; }
+        bool isLastDiskD = (rem <= BS);
         size_t ch = (size_t)(rem > BS ? BS : rem);
-        size_t readCh = ((ch + AES_BLOCK - 1) / AES_BLOCK) * AES_BLOCK;
+        size_t readCh;
+        if (isLastDiskD) {
+            readCh = ((ch + AES_BLOCK - 1) / AES_BLOCK) * AES_BLOCK;
+            readCh += AES_BLOCK;
+        } else {
+            readCh = ch;
+        }
         if (off + readCh > sz) readCh = (size_t)(sz - off);
         if (readCh == 0) break;
         LARGE_INTEGER li; li.QuadPart = off; SetFilePointerEx(h, li, NULL, FILE_BEGIN);
@@ -1009,10 +1050,15 @@ bool FileCrypto::DecryptDisk(int diskNum, const std::string& password, std::stri
         std::vector<uint8_t> decBuf;
         if (!AesCbcDecrypt(key, siv, buf.data(), readCh, decBuf)) { CloseHandle(h); errorMsg = "Decryption failed (BCrypt error)"; SecureZeroMemory(key, 32); return false; }
         DbgLog("[DISK] dec ok, decBuf.size=%zu\n", decBuf.size());
-        uint8_t pv = decBuf.back(); size_t ol = readCh;
-        if (pv > 0 && pv <= AES_BLOCK) ol = readCh - pv;
-        if (ol > ch) ol = ch;
-        DbgLog("[DISK] pv=%u ol=%zu ch=%zu\n", pv, ol, ch);
+        size_t ol;
+        if (isLastDiskD) {
+            uint8_t pv = decBuf.back(); ol = readCh;
+            if (pv > 0 && pv <= AES_BLOCK) ol = readCh - pv;
+            if (ol > ch) ol = ch;
+        } else {
+            ol = readCh;
+        }
+        DbgLog("[DISK] ol=%zu ch=%zu\n", ol, ch);
         SetFilePointerEx(h, li, NULL, FILE_BEGIN);
         DWORD written; WriteFile(h, decBuf.data(), (DWORD)ol, &written, NULL);
         DbgLog("[DISK] wrote %lu bytes at off=%llu\n", written, off);
@@ -1051,19 +1097,27 @@ bool FileCrypto::EncryptVolumeApi(const std::string& volume, std::string& keyPat
             LARGE_INTEGER li; li.QuadPart = off; SetFilePointerEx(h, li, NULL, FILE_BEGIN);
             if (!ReadFile(h, buf.data(), (DWORD)ch, &red, NULL) || red == 0) break;
             if (red < ch) ch = red;
-            size_t pc = ((ch/AES_BLOCK)+1)*AES_BLOCK;
-            std::vector<uint8_t> pad(pc); memcpy(pad.data(), buf.data(), ch);
-            uint8_t pv = (uint8_t)(AES_BLOCK-(ch%AES_BLOCK)); if (ch%AES_BLOCK==0) pv=AES_BLOCK;
-            for (size_t j=ch;j<pc;++j) pad[j]=pv;
+            bool isLastVA = (rem <= BS);
+            size_t encSize; std::vector<uint8_t> workBuf;
+            if (isLastVA) {
+                encSize = ((ch + AES_BLOCK - 1) / AES_BLOCK) * AES_BLOCK;
+                if (encSize == ch) encSize += AES_BLOCK;
+                workBuf.resize(encSize); memcpy(workBuf.data(), buf.data(), ch);
+                uint8_t pv = (uint8_t)(encSize - ch);
+                memset(workBuf.data() + ch, pv, encSize - ch);
+            } else {
+                encSize = ch;
+                workBuf.assign(buf.data(), buf.data() + ch);
+            }
             uint8_t siv[AES_BLOCK]; ComputeSha256((uint8_t*)&off, sizeof(off), siv);
             for (int j=0;j<AES_BLOCK;++j) siv[j]^=iv[j];
-            if (!AesCbcEncrypt(mk, siv, pad.data(), pc, encBuf)) { CloseHandle(h); SecureZeroMemory(mk,64); errorMsg="Encryption failed (BCrypt error)"; return false; }
+            if (!AesCbcEncrypt(mk, siv, workBuf.data(), encSize, encBuf)) { CloseHandle(h); SecureZeroMemory(mk,64); errorMsg="Encryption failed (BCrypt error)"; return false; }
             SetFilePointerEx(h, li, NULL, FILE_BEGIN);
             WriteFile(h, encBuf.data(), (DWORD)encBuf.size(), &w, NULL);
             off += ch; rem -= ch;
             if (progressCb) progressCb("Encrypting", (size_t)(total - rem), (size_t)total);
             if (g_abortEncrypt) { CloseHandle(h); errorMsg="Aborted"; return false; }
-            SecureWipe(buf); SecureWipe(pad); SecureWipe(encBuf);
+            SecureWipe(buf); SecureWipe(workBuf); SecureWipe(encBuf);
         }
         SecureZeroMemory(mk, 64); CloseHandle(h);
         return true;
@@ -1094,8 +1148,15 @@ bool FileCrypto::DecryptVolumeApi(const std::string& volume, const std::string& 
         constexpr size_t BS = 1048576; std::vector<uint8_t> buf(BS + AES_BLOCK);
         while (rem > 0) {
             if (g_abortEncrypt) { CloseHandle(h); errorMsg="Aborted"; return false; }
+            bool isLastVAD = (rem <= BS);
             size_t ch = (size_t)(rem > BS ? BS : rem);
-            size_t readCh = ((ch + AES_BLOCK - 1) / AES_BLOCK) * AES_BLOCK;
+            size_t readCh;
+            if (isLastVAD) {
+                readCh = ((ch + AES_BLOCK - 1) / AES_BLOCK) * AES_BLOCK;
+                readCh += AES_BLOCK;
+            } else {
+                readCh = ch;
+            }
             if (off + readCh > vsz) readCh = (size_t)(vsz - off);
             if (readCh == 0) break;
             LARGE_INTEGER li; li.QuadPart = off; SetFilePointerEx(h, li, NULL, FILE_BEGIN);
@@ -1107,9 +1168,14 @@ bool FileCrypto::DecryptVolumeApi(const std::string& volume, const std::string& 
             std::vector<uint8_t> decBuf;
             if (!AesCbcDecrypt(kb.data(), siv, buf.data(), readCh, decBuf)) { CloseHandle(h); errorMsg = "Decryption failed (BCrypt error)"; SecureWipe(kb); return false; }
             DbgLog("[VAPI] dec ok, size=%zu\n", decBuf.size());
-            uint8_t pv = decBuf.back(); size_t ol = readCh;
-            if (pv > 0 && pv <= AES_BLOCK) ol = readCh - pv;
-            if (ol > ch) ol = ch;
+            size_t ol;
+            if (isLastVAD) {
+                uint8_t pv = decBuf.back(); ol = readCh;
+                if (pv > 0 && pv <= AES_BLOCK) ol = readCh - pv;
+                if (ol > ch) ol = ch;
+            } else {
+                ol = readCh;
+            }
             DWORD w; SetFilePointerEx(h, li, NULL, FILE_BEGIN);
             WriteFile(h, decBuf.data(), (DWORD)ol, &w, NULL);
             off += ch; rem -= ch;
@@ -1148,18 +1214,26 @@ bool FileCrypto::EncryptDiskApi(int diskNum, std::string& keyPathOut, std::strin
             LARGE_INTEGER li; li.QuadPart = off; SetFilePointerEx(h, li, NULL, FILE_BEGIN);
             if (!ReadFile(h, buf.data(), (DWORD)ch, &red, NULL) || red == 0) break;
             if (red < ch) ch = red;
-            size_t pc = ((ch / AES_BLOCK) + 1) * AES_BLOCK;
-            std::vector<uint8_t> pad(pc); memcpy(pad.data(), buf.data(), ch);
-            uint8_t pv = (uint8_t)(AES_BLOCK - (ch % AES_BLOCK)); if (ch % AES_BLOCK == 0) pv = AES_BLOCK;
-            for (size_t j = ch; j < pc; ++j) pad[j] = pv;
+            bool isLastDA = (rem <= BS);
+            size_t encSize; std::vector<uint8_t> workBuf;
+            if (isLastDA) {
+                encSize = ((ch + AES_BLOCK - 1) / AES_BLOCK) * AES_BLOCK;
+                if (encSize == ch) encSize += AES_BLOCK;
+                workBuf.resize(encSize); memcpy(workBuf.data(), buf.data(), ch);
+                uint8_t pv = (uint8_t)(encSize - ch);
+                memset(workBuf.data() + ch, pv, encSize - ch);
+            } else {
+                encSize = ch;
+                workBuf.assign(buf.data(), buf.data() + ch);
+            }
             uint8_t siv[AES_BLOCK]; ComputeSha256((uint8_t*)&off, sizeof(off), siv);
             for (int j = 0; j < AES_BLOCK; ++j) siv[j] ^= iv[j];
-            if (!AesCbcEncrypt(mk, siv, pad.data(), pc, encBuf)) { CloseHandle(h); SecureZeroMemory(mk,64); errorMsg="Encryption failed (BCrypt error)"; return false; }
+            if (!AesCbcEncrypt(mk, siv, workBuf.data(), encSize, encBuf)) { CloseHandle(h); SecureZeroMemory(mk,64); errorMsg="Encryption failed (BCrypt error)"; return false; }
             SetFilePointerEx(h, li, NULL, FILE_BEGIN);
             WriteFile(h, encBuf.data(), (DWORD)encBuf.size(), &w, NULL);
             off += ch; rem -= ch;
             if (progressCb) progressCb("Encrypting", (size_t)(total - rem), (size_t)total);
-            SecureWipe(buf); SecureWipe(pad); SecureWipe(encBuf);
+            SecureWipe(buf); SecureWipe(workBuf); SecureWipe(encBuf);
         }
         SecureZeroMemory(mk, 64); CloseHandle(h);
         return true;
@@ -1191,8 +1265,15 @@ bool FileCrypto::DecryptDiskApi(int diskNum, const std::string& apiKey, std::str
         constexpr size_t BS = 1048576; std::vector<uint8_t> buf(BS + AES_BLOCK), decBuf;
         while (rem > 0) {
             if (g_abortEncrypt) { CloseHandle(h); errorMsg = "Aborted"; return false; }
+            bool isLastDAD = (rem <= BS);
             size_t ch = (size_t)(rem > BS ? BS : rem);
-            size_t readCh = ((ch + AES_BLOCK - 1) / AES_BLOCK) * AES_BLOCK;
+            size_t readCh;
+            if (isLastDAD) {
+                readCh = ((ch + AES_BLOCK - 1) / AES_BLOCK) * AES_BLOCK;
+                readCh += AES_BLOCK;
+            } else {
+                readCh = ch;
+            }
             if (off + readCh > sz) readCh = (size_t)(sz - off);
             if (readCh == 0) break;
             LARGE_INTEGER li; li.QuadPart = off; SetFilePointerEx(h, li, NULL, FILE_BEGIN);
@@ -1202,9 +1283,14 @@ bool FileCrypto::DecryptDiskApi(int diskNum, const std::string& apiKey, std::str
             uint8_t siv[AES_BLOCK]; ComputeSha256((uint8_t*)&off, sizeof(off), siv);
             for (int j = 0; j < AES_BLOCK; ++j) siv[j] ^= iv[j];
             if (!AesCbcDecrypt(kb.data(), siv, buf.data(), readCh, decBuf)) { CloseHandle(h); errorMsg = "Decryption failed (BCrypt error)"; SecureWipe(kb); return false; }
-            uint8_t pv = decBuf.back(); size_t ol = readCh;
-            if (pv > 0 && pv <= AES_BLOCK) ol = readCh - pv;
-            if (ol > ch) ol = ch;
+            size_t ol;
+            if (isLastDAD) {
+                uint8_t pv = decBuf.back(); ol = readCh;
+                if (pv > 0 && pv <= AES_BLOCK) ol = readCh - pv;
+                if (ol > ch) ol = ch;
+            } else {
+                ol = readCh;
+            }
             DWORD w; SetFilePointerEx(h, li, NULL, FILE_BEGIN);
             WriteFile(h, decBuf.data(), (DWORD)ol, &w, NULL);
             off += ch; rem -= ch;
