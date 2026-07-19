@@ -949,7 +949,7 @@ bool FileCrypto::DecryptDisk(int diskNum, const std::string& password, std::stri
     if (memcmp(hdr.data()+32, VOL_MAGIC, 8)) { CloseHandle(h); errorMsg = "Disk not encrypted by this tool"; return false; }
     uint8_t salt[16], iv[AES_BLOCK]; memcpy(salt, hdr.data(), 16); memcpy(iv, hdr.data()+16, AES_BLOCK);
     uint8_t key[32]; DeriveKey(password, salt, 16, key, 32);
-    constexpr size_t BS = 1048576; std::vector<uint8_t> buf(BS + AES_BLOCK), decBuf;
+    constexpr size_t BS = 1048576; std::vector<uint8_t> buf(BS + AES_BLOCK);
     uint64_t off = VOL_HDR, rem = sz - VOL_HDR, total = rem;
     while (rem > 0) {
         if (g_abortEncrypt) { CloseHandle(h); errorMsg = "Aborted"; return false; }
@@ -963,6 +963,7 @@ bool FileCrypto::DecryptDisk(int diskNum, const std::string& password, std::stri
         if (red < readCh) readCh = red;
         uint8_t siv[AES_BLOCK]; ComputeSha256((uint8_t*)&off, sizeof(off), siv);
         for (int j = 0; j < AES_BLOCK; ++j) siv[j] ^= iv[j];
+        std::vector<uint8_t> decBuf;
         if (!AesCbcDecrypt(key, siv, buf.data(), readCh, decBuf)) { CloseHandle(h); errorMsg = "Decryption failed (BCrypt error)"; SecureZeroMemory(key, 32); return false; }
         uint8_t pv = decBuf.back(); size_t ol = readCh;
         if (pv > 0 && pv <= AES_BLOCK) ol = readCh - pv;
@@ -971,7 +972,6 @@ bool FileCrypto::DecryptDisk(int diskNum, const std::string& password, std::stri
         DWORD written; WriteFile(h, decBuf.data(), (DWORD)ol, &written, NULL);
         off += ch; rem -= ch;
         if (progressCb) progressCb("Decrypting", (size_t)(total - rem), (size_t)total);
-        SecureWipe(buf); SecureWipe(decBuf);
     }
     SecureZeroMemory(key, 32); CloseHandle(h);
     return true;
@@ -1039,7 +1039,7 @@ bool FileCrypto::DecryptVolumeApi(const std::string& volume, const std::string& 
         if (memcmp(hdr.data()+32, "CRYPTAPI", 8)) { CloseHandle(h); errorMsg="Not API-key encrypted"; return false; }
         uint8_t iv[AES_BLOCK]; memcpy(iv, hdr.data(), AES_BLOCK);
         uint64_t off = VOL_HDR, rem = vsz - VOL_HDR, total = rem;
-        constexpr size_t BS = 1048576; std::vector<uint8_t> buf(BS + AES_BLOCK), decBuf;
+        constexpr size_t BS = 1048576; std::vector<uint8_t> buf(BS + AES_BLOCK);
         while (rem > 0) {
             if (g_abortEncrypt) { CloseHandle(h); errorMsg="Aborted"; return false; }
             size_t ch = (size_t)(rem > BS ? BS : rem);
@@ -1052,6 +1052,7 @@ bool FileCrypto::DecryptVolumeApi(const std::string& volume, const std::string& 
             if (red < readCh) readCh = red;
             uint8_t siv[AES_BLOCK]; ComputeSha256((uint8_t*)&off, sizeof(off), siv);
             for (int j=0;j<AES_BLOCK;++j) siv[j]^=iv[j];
+            std::vector<uint8_t> decBuf;
             if (!AesCbcDecrypt(kb.data(), siv, buf.data(), readCh, decBuf)) { CloseHandle(h); errorMsg = "Decryption failed (BCrypt error)"; SecureWipe(kb); return false; }
             uint8_t pv = decBuf.back(); size_t ol = readCh;
             if (pv > 0 && pv <= AES_BLOCK) ol = readCh - pv;
@@ -1061,7 +1062,6 @@ bool FileCrypto::DecryptVolumeApi(const std::string& volume, const std::string& 
             off += ch; rem -= ch;
             if (progressCb) progressCb("Decrypting", (size_t)(total - rem), (size_t)total);
             if (g_abortEncrypt) { CloseHandle(h); errorMsg="Aborted"; return false; }
-            SecureWipe(buf); SecureWipe(decBuf);
         }
         SecureWipe(kb); CloseHandle(h);
         return true;
