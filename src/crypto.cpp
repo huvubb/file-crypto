@@ -1092,6 +1092,7 @@ bool FileCrypto::DecryptVolumeApi(const std::string& volume, const std::string& 
             for (int j=0;j<AES_BLOCK;++j) siv[j]^=iv[j];
             std::vector<uint8_t> decBuf;
             if (!AesCbcDecrypt(kb.data(), siv, buf.data(), readCh, decBuf)) { CloseHandle(h); errorMsg = "Decryption failed (BCrypt error)"; SecureWipe(kb); return false; }
+            DbgLog("[VAPI] dec ok, size=%zu\n", decBuf.size());
             uint8_t pv = decBuf.back(); size_t ol = readCh;
             if (pv > 0 && pv <= AES_BLOCK) ol = readCh - pv;
             if (ol > ch) ol = ch;
