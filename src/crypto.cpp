@@ -18,6 +18,8 @@
 #include <cstdarg>
 #include <fstream>
 #include <filesystem>
+#include <RestartManager.h>
+#pragma comment(lib, "Rstrtmgr.lib")
 
 // --- Constants ---
 static constexpr const char* KEY_PREFIX = "fck-v2-";
@@ -647,6 +649,45 @@ static std::wstring ToWStr(const std::string& s) {
     return ws;
 }
 
+static std::string GetLockingProcesses(const std::string& volPath) {
+    // Use Restart Manager to find processes locking the volume
+    std::string result;
+    DWORD session = 0;
+    WCHAR key[64] = {0};
+    if (RmStartSession(&session, 0, key) != ERROR_SUCCESS) return result;
+    
+    std::wstring wpath = ToWStr(volPath);
+    LPCWSTR paths[] = { wpath.c_str() };
+    if (RmRegisterResources(session, 1, paths, 0, NULL, 0, NULL) != ERROR_SUCCESS) {
+        RmEndSession(session);
+        return result;
+    }
+    
+    DWORD reason = 0;
+    UINT nProc = 0, nInfo = 0;
+    RM_PROCESS_INFO procInfo[32];
+    
+    // MinGW RmGetList: 5 params (no infoSize)
+    DWORD r = RmGetList(session, &nInfo, &nProc, NULL, &reason);
+    if ((r == ERROR_MORE_DATA || r == ERROR_SUCCESS) && nProc > 0 && nProc <= 32) {
+        if (RmGetList(session, &nInfo, &nProc, procInfo, &reason) == ERROR_SUCCESS) {
+            char buf[256];
+            for (UINT i = 0; i < nProc; ++i) {
+                auto& p = procInfo[i];
+                if (p.strAppName[0]) {
+                    snprintf(buf, sizeof(buf), "\n    %S (PID: %lu)", p.strAppName, p.Process.dwProcessId);
+                    result += buf;
+                } else {
+                    snprintf(buf, sizeof(buf), "\n    PID %lu", p.Process.dwProcessId);
+                    result += buf;
+                }
+            }
+        }
+    }
+    RmEndSession(session);
+    return result;
+}
+
 static HANDLE OpenVolumeLocked(const std::string& vol, std::string& errorMsg) {
     std::string devPath = "\\\\.\\" + vol;
     std::wstring wdev = ToWStr(devPath);
@@ -657,19 +698,23 @@ static HANDLE OpenVolumeLocked(const std::string& vol, std::string& errorMsg) {
         return INVALID_HANDLE_VALUE;
     }
     DWORD bytes;
-    // Try lock + dismount + lock with retries
     for (int attempt = 0; attempt < 8; ++attempt) {
         if (DeviceIoControl(h, FSCTL_LOCK_VOLUME, NULL, 0, NULL, 0, &bytes, NULL))
-            return h; // locked successfully
+            return h;
         if (attempt == 0) {
-            // First failure: try dismount
             DeviceIoControl(h, FSCTL_DISMOUNT_VOLUME, NULL, 0, NULL, 0, &bytes, NULL);
         }
-        // Wait increasing amounts
         Sleep(300 * (attempt + 1));
     }
+    
+    // Build detailed error with process info
+    std::string procs = GetLockingProcesses(devPath);
+    if (!procs.empty()) {
+        errorMsg = "Cannot lock volume " + vol + " - in use by:" + procs;
+    } else {
+        errorMsg = "Cannot lock volume " + vol + " - close all programs using it and try again";
+    }
     CloseHandle(h);
-    errorMsg = "Cannot lock volume - close all programs using it and try again";
     return INVALID_HANDLE_VALUE;
 }
 
