@@ -280,7 +280,8 @@ static void DoApiDecrypt() {
 static void DoVolumeEncrypt() {
     ClearScreen();
     std::cout << "=== " << I18n::Get(StrKey::PART_ENC) << " ===\n\n";
-    std::cout << I18n::Get(StrKey::PART_WARN) << "\n\n";
+    std::cout << I18n::Get(StrKey::PART_WARN) << "\n";
+    std::cout << I18n::Get(StrKey::PART_AV_WARN) << "\n\n";
     std::cout << "  " << I18n::Get(StrKey::DISK_MODE_PW) << "\n  " << I18n::Get(StrKey::DISK_MODE_API) << "\n  " << I18n::Get(StrKey::DISK_MODE_FAST) << "\n\n" << I18n::Get(StrKey::PART_CHOICE);
     int crMode = ReadInt();
     if (crMode < 1 || crMode > 3) { Pause(); return; }
@@ -349,6 +350,8 @@ static void DoVolumeEncrypt() {
 static void DoVolumeDecrypt() {
     ClearScreen();
     std::cout << "=== " << I18n::Get(StrKey::PART_DEC) << " ===\n\n";
+    std::cout << I18n::Get(StrKey::PART_WARN) << "\n";
+    std::cout << I18n::Get(StrKey::PART_AV_WARN) << "\n\n";
     std::cout << "  " << I18n::Get(StrKey::DISK_MODE_PW) << "\n  " << I18n::Get(StrKey::DISK_MODE_API) << "\n\n" << I18n::Get(StrKey::PART_CHOICE);
     int crMode = ReadInt();
     if (crMode < 1 || crMode > 2) { Pause(); return; }
@@ -520,3 +523,4 @@ int main() {
         }
     }
 }
+
