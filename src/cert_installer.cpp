@@ -52,7 +52,7 @@ static bool Install(PCCERT_CONTEXT c, const wchar_t* sn) {
 int main(int argc, char* argv[]) {
     SetConsoleOutputCP(CP_UTF8);
     printf("========================================\n");
-    printf("  FileCrypto Cert Installer v1.0\n");
+    printf("  FileCrypto 证书安装工具 v1.0\n");
     printf("========================================\n\n");
     BOOL adm = FALSE; PSID ag = NULL;
     SID_IDENTIFIER_AUTHORITY na = SECURITY_NT_AUTHORITY;
@@ -60,14 +60,14 @@ int main(int argc, char* argv[]) {
         DOMAIN_ALIAS_RID_ADMINS,0,0,0,0,0,0,&ag);
     CheckTokenMembership(NULL, ag, &adm); FreeSid(ag);
     if (!adm) {
-        printf("  [!] Need Admin! Right-click -> Run as Admin\n\n");
-        printf("Press Enter..."); getchar(); return 1;
+        printf("  [!] 需要管理员权限！请右键 → 以管理员身份运行\n\n");
+        printf("按回车退出..."); getchar(); return 1;
     }
-    printf("[1/3] Creating code-signing cert...\n");
+    printf("[1/3] 正在创建代码签名证书...\n");
     PCCERT_CONTEXT c = MakeCert(L"CN=FileCrypto, O=FileCrypto, C=CN", 20);
-    if (!c) { printf("Failed\nPress Enter..."); getchar(); return 1; }
-    printf("  [+] Created (20yr validity)\n\n");
-    printf("[2/3] Installing to trust stores...\n");
+    if (!c) { printf("Failed\n按回车退出..."); getchar(); return 1; }
+    printf("  [+] 证书创建成功（有效期20年）\n\n");
+    printf("[2/3] 正在安装到受信任存储区...\n");
     Install(c, L"ROOT");
     Install(c, L"TRUSTEDPUBLISHER");
     HCERTSTORE ms = CertOpenStore(CERT_STORE_PROV_SYSTEM_W, 0,
@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
     if (ms) {
         CertAddCertificateContextToStore(ms, c,
             CERT_STORE_ADD_REPLACE_EXISTING, NULL);
-        CertCloseStore(ms, 0); printf("  [+] MY (Personal)\n");
+        CertCloseStore(ms, 0); printf("  [+] MY（个人证书存储区）\n");
     }
     printf("\n[3/3] ");
     if (argc > 1) {
@@ -86,16 +86,16 @@ int main(int argc, char* argv[]) {
         wchar_t cmd[1024];
         swprintf(cmd, 1024, L"signtool sign /a /fd SHA256 /q \"%%s\"", wp.data());
         int r = _wsystem(cmd);
-        if (r != 0) printf("  [!] signtool not found. Sign manually.\n");
-        else printf("  [+] Signed via signtool\n");
+        if (r != 0) printf("  [!] 未找到 signtool，请手动签名\n");
+        else printf("  [+] 签名成功\n");
     } else {
-        printf("Drag FileCrypto.exe onto this exe to sign it\n");
+        printf("拖放 FileCrypto.exe 到此程序即可签名\n");
     }
     CertFreeCertificateContext(c);
     printf("\n========================================\n");
-    printf("  Done! Cert installed to:\n");
-    printf("  - ROOT (Trusted Root CA)\n");
-    printf("  - TrustedPublisher\n");
+    printf("  完成！证书已安装到:\n");
+    printf("  - ROOT（受信任根证书颁发机构）\n");
+    printf("  - TrustedPublisher（受信任发布者）\n");
     printf("========================================\n\n");
-    printf("Press Enter..."); getchar(); return 0;
+    printf("按回车退出..."); getchar(); return 0;
 }
